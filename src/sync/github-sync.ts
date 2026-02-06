@@ -19,7 +19,7 @@ export interface SyncResult {
 }
 
 const DEFAULT_CONFIG: SyncConfig = {
-  branch: '6.0-dev',
+  branch: '6.1-dev',
   cacheDir: path.join(__dirname, '..', '..', 'cache', 'libraries'),
   repoUrl: 'https://github.com/joomla/joomla-cms.git'
 };
