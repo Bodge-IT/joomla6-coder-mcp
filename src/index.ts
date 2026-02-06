@@ -10,6 +10,7 @@ import * as crypto from 'crypto';
 import { GitHubSync } from './sync/github-sync.js';
 import { IndexBuilder, JoomlaIndex } from './parser/index-builder.js';
 import { IntelephenseBridge } from './lsp/index.js';
+import { SqlSchemaParser, SchemaIndex } from './parser/sql-schema-parser.js';
 import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,8 +19,10 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 let joomlaIndex: JoomlaIndex | null = null;
 let lspBridge: IntelephenseBridge | null = null;
+let schemaIndex: SchemaIndex | null = null;
 const sync = new GitHubSync();
 const indexBuilder = new IndexBuilder();
+const schemaParser = new SqlSchemaParser();
 const indexPath = path.join(__dirname, '..', 'src', 'data', 'index.json');
 
 const toolContext: ToolContext = {
@@ -29,6 +32,7 @@ const toolContext: ToolContext = {
   indexBuilder,
   indexPath,
   getBridge: () => lspBridge,
+  getSchema: () => schemaIndex,
 };
 
 const registeredClients = new Map<string, any>();
@@ -48,6 +52,18 @@ async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
       return idx;
     }
   } catch { /* no cached index */ }
+  return null;
+}
+
+async function loadSchema(): Promise<SchemaIndex | null> {
+  try {
+    const sqlPath = sync.getSqlPath();
+    const schema = await schemaParser.parseDirectory(sqlPath);
+    if (schema.tables.length > 0) {
+      console.log(`Loaded schema: ${schema.tables.length} tables`);
+      return schema;
+    }
+  } catch { /* no SQL files yet */ }
   return null;
 }
 
@@ -87,6 +103,7 @@ async function startLspBridge(): Promise<void> {
 
 async function main() {
   joomlaIndex = await loadOrBuildIndex();
+  schemaIndex = await loadSchema();
 
   // Start LSP bridge in background (non-blocking)
   startLspBridge().catch(console.error);

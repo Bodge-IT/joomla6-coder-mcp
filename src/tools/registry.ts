@@ -12,6 +12,8 @@ import { runDiagnostics } from './diagnostics.js';
 import { runHover } from './hover.js';
 import { runDefinition } from './definition.js';
 import { runCompletion } from './completion.js';
+import { lookupSchema } from './schema.js';
+import type { SchemaIndex } from '../parser/sql-schema-parser.js';
 
 export interface ToolDefinition {
   name: string;
@@ -26,6 +28,7 @@ export interface ToolContext {
   indexBuilder: IndexBuilder;
   indexPath: string;
   getBridge: () => IntelephenseBridge | null;
+  getSchema: () => SchemaIndex | null;
 }
 
 type ToolHandler = (args: Record<string, unknown>, ctx: ToolContext) => Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }>;
@@ -306,6 +309,30 @@ registerTool(
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
+  }
+);
+
+// --- joomla_schema ---
+registerTool(
+  {
+    name: 'joomla_schema',
+    description: 'Look up Joomla 6 database table schemas. Provide a tableName (e.g. "content" or "#__content"), a component name (e.g. "com_content"), or set listAll=true to see all tables.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tableName: { type: 'string', description: 'Table name (with or without #__ prefix)' },
+        component: { type: 'string', description: 'Component name (e.g. com_content)' },
+        listAll: { type: 'boolean', description: 'List all available tables' },
+      },
+    },
+  },
+  async (args, ctx) => {
+    const schema = ctx.getSchema();
+    if (!schema) {
+      return { content: [{ type: 'text', text: 'Schema not available. Run joomla_sync first to fetch SQL files.' }], isError: true };
+    }
+    const text = lookupSchema(schema, args as any);
+    return { content: [{ type: 'text', text }] };
   }
 );
 
