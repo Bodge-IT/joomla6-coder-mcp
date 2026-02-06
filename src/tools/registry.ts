@@ -1,12 +1,17 @@
 import { JoomlaIndex } from '../parser/index-builder.js';
 import { GitHubSync } from '../sync/github-sync.js';
 import { IndexBuilder } from '../parser/index-builder.js';
+import { IntelephenseBridge } from '../lsp/index.js';
 import { lookupClass, formatClassInfo, formatMethodInfo } from './lookup-class.js';
 import { search, formatSearchResults } from './search.js';
 import { listEvents, formatEventsResult } from './list-events.js';
 import { getServices, formatServicesResult } from './get-services.js';
 import { getExtensionStructure, formatExtensionStructure, ExtensionType } from './extension-structure.js';
 import { getCodingPatterns, formatCodingPatterns, listPatternCategories, PatternCategory } from './coding-patterns.js';
+import { runDiagnostics } from './diagnostics.js';
+import { runHover } from './hover.js';
+import { runDefinition } from './definition.js';
+import { runCompletion } from './completion.js';
 
 export interface ToolDefinition {
   name: string;
@@ -20,6 +25,7 @@ export interface ToolContext {
   sync: GitHubSync;
   indexBuilder: IndexBuilder;
   indexPath: string;
+  getBridge: () => IntelephenseBridge | null;
 }
 
 type ToolHandler = (args: Record<string, unknown>, ctx: ToolContext) => Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }>;
@@ -192,6 +198,111 @@ registerTool(
     try {
       const result = getCodingPatterns(args as any);
       return { content: [{ type: 'text', text: formatCodingPatterns(result) }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
+    }
+  }
+);
+
+// --- LSP Tool Helpers ---
+
+function requireBridge(ctx: ToolContext): IntelephenseBridge {
+  const bridge = ctx.getBridge();
+  if (!bridge || !bridge.isReady()) {
+    throw new Error('LSP not ready. Intelephense is still initializing — try again in a few seconds.');
+  }
+  return bridge;
+}
+
+function lspInputSchema(extraProps: Record<string, unknown> = {}) {
+  return {
+    type: 'object',
+    properties: {
+      filePath: { type: 'string', description: 'Absolute path to a PHP file on the server' },
+      code: { type: 'string', description: 'Inline PHP code string (alternative to filePath)' },
+      ...extraProps,
+    },
+  };
+}
+
+// --- joomla_diagnostics ---
+registerTool(
+  {
+    name: 'joomla_diagnostics',
+    description: 'Analyse PHP code for errors, warnings, and type issues using Intelephense LSP. Provide either a filePath (on the server) or inline code.',
+    inputSchema: lspInputSchema(),
+  },
+  async (args, ctx) => {
+    try {
+      const bridge = requireBridge(ctx);
+      const text = await runDiagnostics(bridge, args as any);
+      return { content: [{ type: 'text', text }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
+    }
+  }
+);
+
+// --- joomla_hover ---
+registerTool(
+  {
+    name: 'joomla_hover',
+    description: 'Get type information, docblock, and signature for a symbol at a specific position. Provide filePath or code, plus line and character (0-indexed).',
+    inputSchema: lspInputSchema({
+      line: { type: 'number', description: 'Line number (0-indexed)' },
+      character: { type: 'number', description: 'Character offset (0-indexed)' },
+    }),
+  },
+  async (args, ctx) => {
+    try {
+      const bridge = requireBridge(ctx);
+      const { line, character, ...input } = args as any;
+      const text = await runHover(bridge, input, line ?? 0, character ?? 0);
+      return { content: [{ type: 'text', text }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
+    }
+  }
+);
+
+// --- joomla_definition ---
+registerTool(
+  {
+    name: 'joomla_definition',
+    description: 'Go to definition for a symbol at a specific position. Returns the source location and surrounding code. Provide filePath or code, plus line and character (0-indexed).',
+    inputSchema: lspInputSchema({
+      line: { type: 'number', description: 'Line number (0-indexed)' },
+      character: { type: 'number', description: 'Character offset (0-indexed)' },
+    }),
+  },
+  async (args, ctx) => {
+    try {
+      const bridge = requireBridge(ctx);
+      const { line, character, ...input } = args as any;
+      const text = await runDefinition(bridge, input, line ?? 0, character ?? 0);
+      return { content: [{ type: 'text', text }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
+    }
+  }
+);
+
+// --- joomla_completion ---
+registerTool(
+  {
+    name: 'joomla_completion',
+    description: 'Get code completion suggestions at a specific position. Returns up to 50 suggestions with kind and documentation. Provide filePath or code, plus line and character (0-indexed).',
+    inputSchema: lspInputSchema({
+      line: { type: 'number', description: 'Line number (0-indexed)' },
+      character: { type: 'number', description: 'Character offset (0-indexed)' },
+    }),
+  },
+  async (args, ctx) => {
+    try {
+      const bridge = requireBridge(ctx);
+      const { line, character, ...input } = args as any;
+      const text = await runCompletion(bridge, input, line ?? 0, character ?? 0);
+      return { content: [{ type: 'text', text }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }

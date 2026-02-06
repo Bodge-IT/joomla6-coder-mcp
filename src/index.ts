@@ -9,6 +9,7 @@ import * as crypto from 'crypto';
 
 import { GitHubSync } from './sync/github-sync.js';
 import { IndexBuilder, JoomlaIndex } from './parser/index-builder.js';
+import { IntelephenseBridge } from './lsp/index.js';
 import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,6 +17,7 @@ const PORT = parseInt(process.env.PORT || '3100', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
 let joomlaIndex: JoomlaIndex | null = null;
+let lspBridge: IntelephenseBridge | null = null;
 const sync = new GitHubSync();
 const indexBuilder = new IndexBuilder();
 const indexPath = path.join(__dirname, '..', 'src', 'data', 'index.json');
@@ -26,6 +28,7 @@ const toolContext: ToolContext = {
   sync,
   indexBuilder,
   indexPath,
+  getBridge: () => lspBridge,
 };
 
 const registeredClients = new Map<string, any>();
@@ -70,8 +73,23 @@ function createServer(): Server {
   return server;
 }
 
+async function startLspBridge(): Promise<void> {
+  const workspaceRoot = sync.getLibrariesPath();
+  try {
+    lspBridge = new IntelephenseBridge(workspaceRoot);
+    await lspBridge.start();
+    console.log('Intelephense LSP bridge started');
+  } catch (e) {
+    console.error('Failed to start Intelephense (LSP tools will be unavailable):', e);
+    lspBridge = null;
+  }
+}
+
 async function main() {
   joomlaIndex = await loadOrBuildIndex();
+
+  // Start LSP bridge in background (non-blocking)
+  startLspBridge().catch(console.error);
 
   const app = express();
   app.use(cors());
@@ -151,6 +169,15 @@ async function main() {
   });
 
   app.listen(PORT, HOST, () => console.log(`joomla6-mcp up on ${HOST}:${PORT}`));
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log('Shutting down...');
+    if (lspBridge) await lspBridge.stop();
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 main().catch(console.error);
