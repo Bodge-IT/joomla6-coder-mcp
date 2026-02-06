@@ -13,6 +13,8 @@ import { runHover } from './hover.js';
 import { runDefinition } from './definition.js';
 import { runCompletion } from './completion.js';
 import { lookupSchema } from './schema.js';
+import { runLint } from './lint.js';
+import { runFix } from './fix.js';
 import type { SchemaIndex } from '../parser/sql-schema-parser.js';
 
 export interface ToolDefinition {
@@ -332,6 +334,46 @@ registerTool(
       return { content: [{ type: 'text', text: 'Schema not available. Run joomla_sync first to fetch SQL files.' }], isError: true };
     }
     const text = lookupSchema(schema, args as any);
+    return { content: [{ type: 'text', text }] };
+  }
+);
+
+// --- joomla_lint ---
+registerTool(
+  {
+    name: 'joomla_lint',
+    description: 'Check PHP code against coding standards using phpcs. Requires PHP to be installed on the server.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        filePath: { type: 'string', description: 'Path to PHP file' },
+        code: { type: 'string', description: 'Inline PHP code' },
+        standard: { type: 'string', description: 'Coding standard (default: Joomla)' },
+      },
+    },
+  },
+  async (args, _ctx) => {
+    const text = await runLint(args as any);
+    return { content: [{ type: 'text', text }] };
+  }
+);
+
+// --- joomla_fix ---
+registerTool(
+  {
+    name: 'joomla_fix',
+    description: 'Auto-fix PHP coding standard violations using phpcbf. Requires PHP to be installed on the server.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        filePath: { type: 'string', description: 'Path to PHP file' },
+        code: { type: 'string', description: 'Inline PHP code' },
+        standard: { type: 'string', description: 'Coding standard (default: Joomla)' },
+      },
+    },
+  },
+  async (args, _ctx) => {
+    const text = await runFix(args as any);
     return { content: [{ type: 'text', text }] };
   }
 );
