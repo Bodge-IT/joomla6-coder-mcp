@@ -68,7 +68,12 @@ export class GitHubSync {
 
     const sparseCheckoutPath = path.join(this.config.cacheDir, '.git', 'info', 'sparse-checkout');
     await fs.mkdir(path.dirname(sparseCheckoutPath), { recursive: true });
-    await fs.writeFile(sparseCheckoutPath, 'libraries/src/\n');
+    await fs.writeFile(sparseCheckoutPath, [
+      'libraries/src/',
+      'installation/sql/',
+      'administrator/components/*/src/',
+      'components/*/src/',
+    ].join('\n') + '\n');
 
     await repoGit.fetch('origin', this.config.branch, ['--depth', '1']);
     await repoGit.checkout(`origin/${this.config.branch}`);
@@ -124,5 +129,13 @@ export class GitHubSync {
 
   getLibrariesPath(): string {
     return path.join(this.config.cacheDir, 'libraries', 'src');
+  }
+
+  getSqlPath(): string {
+    return path.join(this.config.cacheDir, 'installation', 'sql');
+  }
+
+  getCacheDir(): string {
+    return this.config.cacheDir;
   }
 }
