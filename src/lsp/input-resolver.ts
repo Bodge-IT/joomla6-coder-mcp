@@ -85,11 +85,11 @@ export class InputResolver {
 }
 
 function pathToFileUri(filePath: string): string {
-  const normalized = filePath.replace(/\\/g, '/');
-  if (normalized.startsWith('/')) {
-    return 'file://' + normalized;
+  const normalised = filePath.replace(/\\/g, '/');
+  if (normalised.startsWith('/')) {
+    return 'file://' + normalised;
   }
-  return 'file:///' + normalized;
+  return 'file:///' + normalised;
 }
 
 export function fileUriToPath(uri: string): string {

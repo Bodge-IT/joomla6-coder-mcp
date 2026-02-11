@@ -28,6 +28,7 @@
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   },
+  "license": "GPL-2.0-or-later",
   "engines": {
     "node": ">=18.0.0"
   }

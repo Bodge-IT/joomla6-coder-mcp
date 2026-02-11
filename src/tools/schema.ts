@@ -72,16 +72,16 @@ export function lookupSchema(
   }
 
   if (input.tableName) {
-    // Normalize: remove #__ prefix if present
-    const normalized = input.tableName.replace(/^#__/, '');
-    const table = schema.tableMap[normalized];
+    // Normalise: remove #__ prefix if present
+    const normalised = input.tableName.replace(/^#__/, '');
+    const table = schema.tableMap[normalised];
     if (table) {
       return formatTableSchema(table);
     }
 
     // Try partial match
     const matches = schema.tables.filter(t =>
-      t.shortName.includes(normalized) || t.name.includes(input.tableName!)
+      t.shortName.includes(normalised) || t.name.includes(input.tableName!)
     );
     if (matches.length === 1) {
       return formatTableSchema(matches[0]);

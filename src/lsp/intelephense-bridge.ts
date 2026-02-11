@@ -2,7 +2,7 @@
  * IntelephenseBridge - Manages an Intelephense LSP child process via stdio.
  *
  * Provides typed methods for LSP operations: diagnostics, hover, completion, definition.
- * Handles initialization, document synchronization, and graceful shutdown.
+ * Handles initialisation, document synchronisation, and graceful shutdown.
  */
 
 import { spawn, ChildProcess } from 'child_process';
@@ -62,8 +62,8 @@ export class IntelephenseBridge {
   private pendingRequests = new Map<number, { resolve: (value: any) => void; reject: (error: any) => void }>();
   private buffer = '';
   private contentLength = -1;
-  private initialized = false;
-  private initializing = false;
+  private initialised = false;
+  private initialising = false;
   private restartCount = 0;
   private lastRestartTime = 0;
   private readonly MAX_RESTARTS = 3;
@@ -85,8 +85,8 @@ export class IntelephenseBridge {
   }
 
   async start(): Promise<void> {
-    if (this.initialized || this.initializing) return;
-    this.initializing = true;
+    if (this.initialised || this.initialising) return;
+    this.initialising = true;
 
     try {
       await fs.mkdir(this.storagePath, { recursive: true });
@@ -106,8 +106,8 @@ export class IntelephenseBridge {
       });
       this.process.on('exit', (code) => {
         console.log(`[intelephense] exited with code ${code}`);
-        this.initialized = false;
-        this.initializing = false;
+        this.initialised = false;
+        this.initialising = false;
         this.process = null;
         // Auto-restart on non-zero exit (crash)
         if (code !== 0 && code !== null) {
@@ -144,11 +144,11 @@ export class IntelephenseBridge {
       // Send initialized notification
       this.sendNotification('initialized', {});
 
-      this.initialized = true;
-      this.initializing = false;
-      console.log('[intelephense] initialized, capabilities:', JSON.stringify(initResult?.capabilities?.completionProvider ? 'completion' : 'none'));
+      this.initialised = true;
+      this.initialising = false;
+      console.log('[intelephense] initialised, capabilities:', JSON.stringify(initResult?.capabilities?.completionProvider ? 'completion' : 'none'));
     } catch (e) {
-      this.initializing = false;
+      this.initialising = false;
       throw e;
     }
   }
@@ -184,7 +184,7 @@ export class IntelephenseBridge {
   }
 
   isReady(): boolean {
-    return this.initialized && this.process !== null;
+    return this.initialised && this.process !== null;
   }
 
   getStatus(): { ready: boolean; pid: number | null; restarts: number } {
@@ -469,8 +469,8 @@ export class IntelephenseBridge {
   }
 
   private ensureReady(): void {
-    if (!this.initialized) {
-      throw new Error('Intelephense not initialized. The server is still starting up - try again shortly.');
+    if (!this.initialised) {
+      throw new Error('Intelephense not initialised. The server is still starting up — try again shortly.');
     }
   }
 }
@@ -478,11 +478,11 @@ export class IntelephenseBridge {
 // --- Helpers ---
 
 function pathToFileUri(filePath: string): string {
-  const normalized = filePath.replace(/\\/g, '/');
-  if (normalized.startsWith('/')) {
-    return 'file://' + normalized;
+  const normalised = filePath.replace(/\\/g, '/');
+  if (normalised.startsWith('/')) {
+    return 'file://' + normalised;
   }
-  return 'file:///' + normalized;
+  return 'file:///' + normalised;
 }
 
 function formatHoverContents(contents: HoverResult['contents']): string {

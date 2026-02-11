@@ -242,7 +242,7 @@ registerTool(
 function requireBridge(ctx: ToolContext): IntelephenseBridge {
   const bridge = ctx.getBridge();
   if (!bridge || !bridge.isReady()) {
-    throw new Error('LSP not ready. Intelephense is still initializing — try again in a few seconds.');
+    throw new Error('LSP not ready. Intelephense is still initialising — try again in a few seconds.');
   }
   return bridge;
 }
