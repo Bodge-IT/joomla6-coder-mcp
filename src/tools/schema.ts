@@ -74,7 +74,7 @@ export function lookupSchema(
   if (input.tableName) {
     // Normalize: remove #__ prefix if present
     const normalized = input.tableName.replace(/^#__/, '');
-    const table = schema.tableMap.get(normalized);
+    const table = schema.tableMap[normalized];
     if (table) {
       return formatTableSchema(table);
     }

@@ -3,6 +3,7 @@ import { ParsedClass } from '../parser/php-parser.js';
 
 export interface GetServicesInput {
   filter?: string;
+  limit?: number;
 }
 
 export interface ServiceInfo {
@@ -19,7 +20,7 @@ export interface GetServicesResult {
 }
 
 export function getServices(index: JoomlaIndex, input: GetServicesInput = {}): GetServicesResult {
-  const { filter } = input;
+  const { filter, limit = 30 } = input;
   const services: ServiceInfo[] = [];
 
   // Find service providers
@@ -61,6 +62,8 @@ export function getServices(index: JoomlaIndex, input: GetServicesInput = {}): G
       s.fqn.toLowerCase().includes(filterLower)
     );
   }
+
+  filtered = filtered.slice(0, limit);
 
   return {
     services: filtered,

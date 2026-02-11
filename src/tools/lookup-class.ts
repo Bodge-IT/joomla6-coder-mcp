@@ -4,6 +4,7 @@ import { ParsedClass, ParsedMethod } from '../parser/php-parser.js';
 export interface LookupClassInput {
   className: string;
   methodName?: string;
+  summary?: boolean;
 }
 
 export interface LookupClassResult {
@@ -90,6 +91,50 @@ export function lookupClass(index: JoomlaIndex, input: LookupClassInput): Lookup
     class: matchedClass,
     message: `Found ${matchedClass.fqn}`
   };
+}
+
+export function formatClassSummary(cls: ParsedClass): string {
+  const lines: string[] = [];
+
+  const type = cls.isInterface ? 'interface' : cls.isTrait ? 'trait' : (cls.isAbstract ? 'abstract class' : 'class');
+  lines.push(`## ${type} ${cls.name}`);
+  lines.push(`**FQN:** \`${cls.fqn}\``);
+
+  if (cls.extends) {
+    lines.push(`**Extends:** \`${cls.extends}\``);
+  }
+
+  if (cls.implements.length > 0) {
+    lines.push(`**Implements:** ${cls.implements.map(i => `\`${i}\``).join(', ')}`);
+  }
+
+  if (cls.constants.length > 0) {
+    lines.push('');
+    lines.push(`**Constants:** ${cls.constants.map(c => c.name).join(', ')}`);
+  }
+
+  const publicProps = cls.properties.filter(p => p.visibility === 'public');
+  if (publicProps.length > 0) {
+    lines.push(`**Properties:** ${publicProps.map(p => `$${p.name}`).join(', ')}`);
+  }
+
+  const publicMethods = cls.methods.filter(m => m.visibility === 'public');
+  const protectedMethods = cls.methods.filter(m => m.visibility === 'protected');
+
+  if (publicMethods.length > 0) {
+    lines.push(`**Public methods:** ${publicMethods.map(m => m.name).join(', ')}`);
+  }
+
+  if (protectedMethods.length > 0) {
+    lines.push(`**Protected methods:** ${protectedMethods.map(m => m.name).join(', ')}`);
+  }
+
+  lines.push('');
+  lines.push(`**Source:** \`${cls.filePath}\``);
+  lines.push('');
+  lines.push('*Use summary=false for full details including signatures and docblocks.*');
+
+  return lines.join('\n');
 }
 
 export function formatClassInfo(cls: ParsedClass): string {

@@ -92,12 +92,31 @@ export class IndexBuilder {
   private buildEventMap(classes: ParsedClass[]): Record<string, EventInfo> {
     const map: Record<string, EventInfo> = {};
 
-    // Find event classes (typically in Event namespace or extending Event)
-    const eventClasses = classes.filter(cls =>
-      cls.namespace.includes('Event') ||
-      cls.extends?.includes('Event') ||
-      cls.name.endsWith('Event')
-    );
+    // Exclusion list for false positives
+    const EVENT_EXCLUSIONS = new Set([
+      'EventManager', 'EventManagerInterface',
+      'EventListener', 'EventListenerInterface',
+      'EventSubscriber', 'EventSubscriberInterface',
+      'EventDispatcher', 'EventDispatcherInterface',
+      'EventAwareInterface', 'EventAwareTrait',
+    ]);
+
+    const eventClasses = classes.filter(cls => {
+      // Skip known non-event classes
+      if (EVENT_EXCLUSIONS.has(cls.name)) return false;
+
+      // Must satisfy namespace condition: namespace contains \Event\ segment or ends with \Event
+      const nsHasEvent = /\\Event\\/.test(cls.namespace) || cls.namespace.endsWith('\\Event');
+
+      // Must also satisfy at least one of:
+      // - Extends an Event base class
+      // - Name ends with 'Event'
+      const extendsEvent = cls.extends?.endsWith('Event') === true ||
+                           cls.extends?.includes('AbstractEvent') === true;
+      const nameIsEvent = cls.name.endsWith('Event');
+
+      return nsHasEvent && (extendsEvent || nameIsEvent);
+    });
 
     for (const cls of eventClasses) {
       const constructorMethod = cls.methods.find(m => m.name === '__construct');

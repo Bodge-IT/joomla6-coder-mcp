@@ -3,6 +3,8 @@ import { JoomlaIndex, EventInfo } from '../parser/index-builder.js';
 export interface ListEventsInput {
   filter?: string;
   namespace?: string;
+  limit?: number;
+  summary?: boolean;
 }
 
 export interface ListEventsResult {
@@ -12,7 +14,8 @@ export interface ListEventsResult {
 }
 
 export function listEvents(index: JoomlaIndex, input: ListEventsInput = {}): ListEventsResult {
-  const { filter, namespace } = input;
+  const { filter, namespace, limit = 30 } = input;
+  const effectiveLimit = Math.min(Math.max(1, limit), 100);
 
   let events = Object.values(index.eventMap);
   const total = events.length;
@@ -31,14 +34,45 @@ export function listEvents(index: JoomlaIndex, input: ListEventsInput = {}): Lis
     );
   }
 
+  const filtered = events.length;
+  events = events.slice(0, effectiveLimit);
+
   return {
     events,
     total,
-    filtered: events.length
+    filtered
   };
 }
 
-export function formatEventsResult(result: ListEventsResult): string {
+export function formatEventsCompact(result: ListEventsResult): string {
+  const lines: string[] = [];
+
+  lines.push(`## Joomla 6 Events (compact)`);
+  lines.push(`Showing ${result.events.length} of ${result.filtered} filtered (${result.total} total)`);
+  lines.push('');
+
+  if (result.events.length === 0) {
+    lines.push('No events found matching the criteria.');
+    return lines.join('\n');
+  }
+
+  for (const event of result.events) {
+    const paramCount = event.parameters.length;
+    lines.push(`- **${event.name}** \`${event.class}\` (${paramCount} param${paramCount !== 1 ? 's' : ''})`);
+  }
+
+  if (result.events.length < result.filtered) {
+    lines.push('');
+    lines.push(`*${result.filtered - result.events.length} more events not shown. Use limit or filters to refine.*`);
+  }
+
+  return lines.join('\n');
+}
+
+export function formatEventsResult(result: ListEventsResult, summary: boolean = false): string {
+  if (summary) {
+    return formatEventsCompact(result);
+  }
   const lines: string[] = [];
 
   lines.push(`## Joomla 6 Events`);

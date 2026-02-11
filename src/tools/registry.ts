@@ -2,10 +2,11 @@ import { JoomlaIndex } from '../parser/index-builder.js';
 import { GitHubSync } from '../sync/github-sync.js';
 import { IndexBuilder } from '../parser/index-builder.js';
 import { IntelephenseBridge } from '../lsp/index.js';
-import { lookupClass, formatClassInfo, formatMethodInfo } from './lookup-class.js';
+import { lookupClass, formatClassInfo, formatClassSummary, formatMethodInfo } from './lookup-class.js';
 import { search, formatSearchResults } from './search.js';
 import { listEvents, formatEventsResult } from './list-events.js';
 import { getServices, formatServicesResult } from './get-services.js';
+import { truncateResponse } from './response-utils.js';
 import { getExtensionStructure, formatExtensionStructure, ExtensionType } from './extension-structure.js';
 import { getCodingPatterns, formatCodingPatterns, listPatternCategories, PatternCategory } from './coding-patterns.js';
 import { runDiagnostics } from './diagnostics.js';
@@ -15,7 +16,9 @@ import { runCompletion } from './completion.js';
 import { lookupSchema } from './schema.js';
 import { runLint } from './lint.js';
 import { runFix } from './fix.js';
-import type { SchemaIndex } from '../parser/sql-schema-parser.js';
+import { SqlSchemaParser, type SchemaIndex } from '../parser/sql-schema-parser.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export interface ToolDefinition {
   name: string;
@@ -31,6 +34,9 @@ export interface ToolContext {
   indexPath: string;
   getBridge: () => IntelephenseBridge | null;
   getSchema: () => SchemaIndex | null;
+  setSchema: (schema: SchemaIndex) => void;
+  schemaParser: SqlSchemaParser;
+  schemaPath: string;
 }
 
 type ToolHandler = (args: Record<string, unknown>, ctx: ToolContext) => Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }>;
@@ -61,7 +67,19 @@ registerTool(
       const idx = await ctx.indexBuilder.buildIndex(ctx.sync.getLibrariesPath(), r.lastCommit);
       await ctx.indexBuilder.saveIndex(idx, ctx.indexPath);
       ctx.setIndex(idx);
-      return { content: [{ type: 'text', text: r.message }] };
+
+      // Also rebuild and cache schema
+      try {
+        const sqlPath = ctx.sync.getSqlPath();
+        const schema = await ctx.schemaParser.parseDirectory(sqlPath);
+        if (schema.tables.length > 0) {
+          ctx.setSchema(schema);
+          await fs.mkdir(path.dirname(ctx.schemaPath), { recursive: true });
+          await fs.writeFile(ctx.schemaPath, JSON.stringify(schema, null, 2));
+        }
+      } catch { /* SQL schema rebuild is best-effort */ }
+
+      return { content: [{ type: 'text', text: truncateResponse(r.message) }] };
     }
     return { content: [{ type: 'text', text: r.message }], isError: true };
   }
@@ -76,7 +94,8 @@ registerTool(
       type: 'object',
       properties: {
         className: { type: 'string', description: 'Class name, FQN, or partial match' },
-        methodName: { type: 'string', description: 'Optional: specific method to look up' }
+        methodName: { type: 'string', description: 'Optional: specific method to look up' },
+        summary: { type: 'boolean', description: 'Return compact format with names only (default: false)' }
       },
       required: ['className']
     }
@@ -85,17 +104,19 @@ registerTool(
     const index = ctx.getIndex();
     if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
     const r = lookupClass(index, args as any);
+    const useSummary = (args as any).summary === true;
     if (r.found && r.method && r.class) {
-      return { content: [{ type: 'text', text: formatMethodInfo(r.method, r.class.fqn) }] };
+      return { content: [{ type: 'text', text: truncateResponse(formatMethodInfo(r.method, r.class.fqn)) }] };
     }
     if (r.found && r.class) {
-      return { content: [{ type: 'text', text: formatClassInfo(r.class) }] };
+      const text = useSummary ? formatClassSummary(r.class) : formatClassInfo(r.class);
+      return { content: [{ type: 'text', text: truncateResponse(text) }] };
     }
     let text = r.message;
     if (r.suggestions && r.suggestions.length > 0) {
       text += '\n\nSuggestions:\n' + r.suggestions.map(s => `- ${s}`).join('\n');
     }
-    return { content: [{ type: 'text', text }] };
+    return { content: [{ type: 'text', text: truncateResponse(text) }] };
   }
 );
 
@@ -109,7 +130,8 @@ registerTool(
       properties: {
         query: { type: 'string', description: 'Search term' },
         type: { type: 'string', enum: ['class', 'method', 'constant', 'property', 'all'], description: 'Filter by type (default: all)' },
-        limit: { type: 'number', description: 'Max results (default: 20)' }
+        limit: { type: 'number', description: 'Max results (default: 10)' },
+        verbose: { type: 'boolean', description: 'Include full docblocks and signatures (default: false)' }
       },
       required: ['query']
     }
@@ -117,7 +139,8 @@ registerTool(
   async (args, ctx) => {
     const index = ctx.getIndex();
     if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
-    return { content: [{ type: 'text', text: formatSearchResults(search(index, args as any)) }] };
+    const verbose = (args as any).verbose === true;
+    return { content: [{ type: 'text', text: truncateResponse(formatSearchResults(search(index, args as any), verbose)) }] };
   }
 );
 
@@ -130,14 +153,18 @@ registerTool(
       type: 'object',
       properties: {
         filter: { type: 'string', description: 'Filter by event name or description' },
-        namespace: { type: 'string', description: 'Filter by namespace' }
+        namespace: { type: 'string', description: 'Filter by namespace' },
+        limit: { type: 'number', description: 'Max events to return (default: 30, max: 100)' },
+        summary: { type: 'boolean', description: 'Compact format with names only (default: true)' }
       }
     }
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
     if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
-    return { content: [{ type: 'text', text: formatEventsResult(listEvents(index, args as any)) }] };
+    const summary = (args as any).summary !== false; // default true
+    const result = listEvents(index, args as any);
+    return { content: [{ type: 'text', text: truncateResponse(formatEventsResult(result, summary)) }] };
   }
 );
 
@@ -149,14 +176,15 @@ registerTool(
     inputSchema: {
       type: 'object',
       properties: {
-        filter: { type: 'string', description: 'Filter by service name or FQN' }
+        filter: { type: 'string', description: 'Filter by service name or FQN' },
+        limit: { type: 'number', description: 'Max services to return (default: 30)' }
       }
     }
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
     if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
-    return { content: [{ type: 'text', text: formatServicesResult(getServices(index, args as any)) }] };
+    return { content: [{ type: 'text', text: truncateResponse(formatServicesResult(getServices(index, args as any))) }] };
   }
 );
 
@@ -177,7 +205,7 @@ registerTool(
   async (args, _ctx) => {
     try {
       const result = getExtensionStructure(args as any);
-      return { content: [{ type: 'text', text: formatExtensionStructure(result) }] };
+      return { content: [{ type: 'text', text: truncateResponse(formatExtensionStructure(result)) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -198,11 +226,11 @@ registerTool(
   },
   async (args, _ctx) => {
     if (!args.category) {
-      return { content: [{ type: 'text', text: listPatternCategories() }] };
+      return { content: [{ type: 'text', text: truncateResponse(listPatternCategories()) }] };
     }
     try {
       const result = getCodingPatterns(args as any);
-      return { content: [{ type: 'text', text: formatCodingPatterns(result) }] };
+      return { content: [{ type: 'text', text: truncateResponse(formatCodingPatterns(result)) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -241,7 +269,7 @@ registerTool(
     try {
       const bridge = requireBridge(ctx);
       const text = await runDiagnostics(bridge, args as any);
-      return { content: [{ type: 'text', text }] };
+      return { content: [{ type: 'text', text: truncateResponse(text) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -263,7 +291,7 @@ registerTool(
       const bridge = requireBridge(ctx);
       const { line, character, ...input } = args as any;
       const text = await runHover(bridge, input, line ?? 0, character ?? 0);
-      return { content: [{ type: 'text', text }] };
+      return { content: [{ type: 'text', text: truncateResponse(text) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -285,7 +313,7 @@ registerTool(
       const bridge = requireBridge(ctx);
       const { line, character, ...input } = args as any;
       const text = await runDefinition(bridge, input, line ?? 0, character ?? 0);
-      return { content: [{ type: 'text', text }] };
+      return { content: [{ type: 'text', text: truncateResponse(text) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -307,7 +335,7 @@ registerTool(
       const bridge = requireBridge(ctx);
       const { line, character, ...input } = args as any;
       const text = await runCompletion(bridge, input, line ?? 0, character ?? 0);
-      return { content: [{ type: 'text', text }] };
+      return { content: [{ type: 'text', text: truncateResponse(text) }] };
     } catch (e) {
       return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
     }
@@ -334,7 +362,7 @@ registerTool(
       return { content: [{ type: 'text', text: 'Schema not available. Run joomla_sync first to fetch SQL files.' }], isError: true };
     }
     const text = lookupSchema(schema, args as any);
-    return { content: [{ type: 'text', text }] };
+    return { content: [{ type: 'text', text: truncateResponse(text) }] };
   }
 );
 
@@ -354,7 +382,7 @@ registerTool(
   },
   async (args, _ctx) => {
     const text = await runLint(args as any);
-    return { content: [{ type: 'text', text }] };
+    return { content: [{ type: 'text', text: truncateResponse(text) }] };
   }
 );
 
@@ -374,7 +402,7 @@ registerTool(
   },
   async (args, _ctx) => {
     const text = await runFix(args as any);
-    return { content: [{ type: 'text', text }] };
+    return { content: [{ type: 'text', text: truncateResponse(text) }] };
   }
 );
 

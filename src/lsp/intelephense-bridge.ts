@@ -64,6 +64,11 @@ export class IntelephenseBridge {
   private contentLength = -1;
   private initialized = false;
   private initializing = false;
+  private restartCount = 0;
+  private lastRestartTime = 0;
+  private readonly MAX_RESTARTS = 3;
+  private readonly RESTART_COOLDOWN_MS = 5000;
+  private readonly RESTART_WINDOW_MS = 60000;
 
   private workspaceRoot: string;
   private storagePath: string;
@@ -104,6 +109,10 @@ export class IntelephenseBridge {
         this.initialized = false;
         this.initializing = false;
         this.process = null;
+        // Auto-restart on non-zero exit (crash)
+        if (code !== 0 && code !== null) {
+          this.attemptRestart();
+        }
       });
 
       // LSP Initialize
@@ -176,6 +185,42 @@ export class IntelephenseBridge {
 
   isReady(): boolean {
     return this.initialized && this.process !== null;
+  }
+
+  getStatus(): { ready: boolean; pid: number | null; restarts: number } {
+    return {
+      ready: this.isReady(),
+      pid: this.process?.pid ?? null,
+      restarts: this.restartCount,
+    };
+  }
+
+  private async attemptRestart(): Promise<void> {
+    const now = Date.now();
+
+    // Reset counter if outside the window
+    if (now - this.lastRestartTime > this.RESTART_WINDOW_MS) {
+      this.restartCount = 0;
+    }
+
+    if (this.restartCount >= this.MAX_RESTARTS) {
+      console.error(`[intelephense] max restarts (${this.MAX_RESTARTS}) reached within ${this.RESTART_WINDOW_MS / 1000}s window. Giving up.`);
+      return;
+    }
+
+    this.restartCount++;
+    this.lastRestartTime = now;
+
+    console.log(`[intelephense] attempting restart ${this.restartCount}/${this.MAX_RESTARTS} in ${this.RESTART_COOLDOWN_MS / 1000}s...`);
+
+    await new Promise(resolve => setTimeout(resolve, this.RESTART_COOLDOWN_MS));
+
+    try {
+      await this.start();
+      console.log('[intelephense] restart successful');
+    } catch (e) {
+      console.error('[intelephense] restart failed:', e);
+    }
   }
 
   // --- Public LSP Operations ---

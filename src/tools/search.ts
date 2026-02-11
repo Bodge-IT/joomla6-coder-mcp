@@ -5,6 +5,7 @@ export interface SearchInput {
   query: string;
   type?: 'class' | 'method' | 'constant' | 'property' | 'all';
   limit?: number;
+  verbose?: boolean;
 }
 
 export interface SearchResult {
@@ -23,7 +24,7 @@ export interface SearchOutput {
 }
 
 export function search(index: JoomlaIndex, input: SearchInput): SearchOutput {
-  const { query, type = 'all', limit = 20 } = input;
+  const { query, type = 'all', limit = 10 } = input;
   const searchTerm = query.toLowerCase();
   const results: SearchResult[] = [];
 
@@ -128,8 +129,8 @@ function truncateDocblock(docblock?: string): string | undefined {
     .join(' ')
     .trim();
 
-  if (cleaned.length > 150) {
-    return cleaned.substring(0, 150) + '...';
+  if (cleaned.length > 100) {
+    return cleaned.substring(0, 100) + '...';
   }
 
   return cleaned;
@@ -170,7 +171,7 @@ function formatPropertySignature(prop: any): string {
   return `${prop.visibility} ${static_}${type}$${prop.name}`;
 }
 
-export function formatSearchResults(output: SearchOutput): string {
+export function formatSearchResults(output: SearchOutput, verbose: boolean = false): string {
   const lines: string[] = [];
 
   lines.push(`## Search Results for "${output.query}"`);
@@ -202,10 +203,10 @@ export function formatSearchResults(output: SearchOutput): string {
     for (const result of grouped[type]) {
       lines.push(`**${result.name}**`);
       lines.push(`\`${result.fqn}\``);
-      if (result.signature) {
+      if (verbose && result.signature) {
         lines.push(`\`${result.signature}\``);
       }
-      if (result.docblock) {
+      if (verbose && result.docblock) {
         lines.push(`> ${result.docblock}`);
       }
       lines.push('');

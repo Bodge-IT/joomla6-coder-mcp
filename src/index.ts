@@ -1,9 +1,11 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import express from 'express';
 import cors from 'cors';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import * as crypto from 'crypto';
 
@@ -16,6 +18,7 @@ import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registr
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3100', 10);
 const HOST = process.env.HOST || '0.0.0.0';
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 
 let joomlaIndex: JoomlaIndex | null = null;
 let lspBridge: IntelephenseBridge | null = null;
@@ -23,7 +26,8 @@ let schemaIndex: SchemaIndex | null = null;
 const sync = new GitHubSync();
 const indexBuilder = new IndexBuilder();
 const schemaParser = new SqlSchemaParser();
-const indexPath = path.join(__dirname, '..', 'src', 'data', 'index.json');
+const indexPath = path.join(DATA_DIR, 'index.json');
+const schemaPath = path.join(DATA_DIR, 'schema.json');
 
 const toolContext: ToolContext = {
   getIndex: () => joomlaIndex,
@@ -33,6 +37,9 @@ const toolContext: ToolContext = {
   indexPath,
   getBridge: () => lspBridge,
   getSchema: () => schemaIndex,
+  setSchema: (s) => { schemaIndex = s; },
+  schemaParser,
+  schemaPath,
 };
 
 const registeredClients = new Map<string, any>();
@@ -56,11 +63,26 @@ async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
 }
 
 async function loadSchema(): Promise<SchemaIndex | null> {
+  // Try cached JSON first
+  try {
+    const cached = await fs.readFile(schemaPath, 'utf-8');
+    const schema: SchemaIndex = JSON.parse(cached);
+    if (schema.tables.length > 0) {
+      console.log(`Loaded schema from cache: ${schema.tables.length} tables`);
+      return schema;
+    }
+  } catch { /* no cache, parse SQL */ }
+
+  // Fall back to SQL parsing
   try {
     const sqlPath = sync.getSqlPath();
     const schema = await schemaParser.parseDirectory(sqlPath);
     if (schema.tables.length > 0) {
-      console.log(`Loaded schema: ${schema.tables.length} tables`);
+      console.log(`Parsed schema: ${schema.tables.length} tables`);
+      // Save to cache
+      await fs.mkdir(path.dirname(schemaPath), { recursive: true });
+      await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+      console.log(`Schema cached to ${schemaPath}`);
       return schema;
     }
   } catch { /* no SQL files yet */ }
@@ -96,8 +118,8 @@ async function startLspBridge(): Promise<void> {
     await lspBridge.start();
     console.log('Intelephense LSP bridge started');
   } catch (e) {
-    console.error('Failed to start Intelephense (LSP tools will be unavailable):', e);
-    lspBridge = null;
+    console.error('Failed to start Intelephense (LSP tools will be unavailable until restart):', e);
+    // Keep bridge instance alive — restart logic will attempt recovery
   }
 }
 
@@ -157,10 +179,20 @@ async function main() {
     res.json({ access_token: at, token_type: 'Bearer', expires_in: 3600 });
   });
 
-  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/health', (_req, res) => {
+    const indexCount = joomlaIndex?.classes.length ?? 0;
+    const schemaCount = schemaIndex?.tables.length ?? 0;
+    const lspStatus = lspBridge?.getStatus() ?? { ready: false, pid: null, restarts: 0 };
+    res.json({
+      status: 'ok',
+      index: { classes: indexCount },
+      schema: { tables: schemaCount },
+      lsp: lspStatus,
+    });
+  });
 
   const server = createServer();
-  const transports = new Map<string, SSEServerTransport>();
+  const transports = new Map<string, SSEServerTransport | StreamableHTTPServerTransport>();
 
   app.get('/sse', async (req, res) => {
     console.log('SSE connection from: ' + req.ip);
@@ -178,10 +210,87 @@ async function main() {
     const t = transports.get(sid);
     if (!t) return res.status(400).json({ error: 'unknown session' });
     try {
-      await t.handlePostMessage(req, res, req.body);
+      if (t instanceof SSEServerTransport) {
+        await t.handlePostMessage(req, res, req.body);
+      } else {
+        res.status(400).json({ error: 'Use /mcp endpoint for streamable HTTP sessions' });
+      }
     } catch (e) {
       console.error(e);
       res.status(500).json({ error: 'internal error' });
+    }
+  });
+
+  // Streamable HTTP transport (more efficient than SSE for large responses)
+  app.all('/mcp', async (req, res) => {
+    try {
+      const sessionId = req.headers['mcp-session-id'] as string | undefined;
+
+      if (req.method === 'GET') {
+        // SSE stream for server-initiated messages
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => crypto.randomUUID(),
+          onsessioninitialized: (sid) => {
+            transports.set(sid, transport);
+          },
+        });
+        transport.onclose = () => {
+          const sid = transport.sessionId;
+          if (sid) transports.delete(sid);
+        };
+        await server.connect(transport);
+        await transport.handleRequest(req, res);
+        return;
+      }
+
+      if (req.method === 'POST') {
+        if (sessionId && transports.has(sessionId)) {
+          // Existing session
+          const transport = transports.get(sessionId)!;
+          if (transport instanceof StreamableHTTPServerTransport) {
+            await transport.handleRequest(req, res);
+          } else {
+            res.status(400).json({ error: 'Session is SSE, not streamable HTTP' });
+          }
+        } else {
+          // New session
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID(),
+            onsessioninitialized: (sid) => {
+              transports.set(sid, transport);
+            },
+          });
+          transport.onclose = () => {
+            const sid = transport.sessionId;
+            if (sid) transports.delete(sid);
+          };
+          await server.connect(transport);
+          await transport.handleRequest(req, res);
+        }
+        return;
+      }
+
+      if (req.method === 'DELETE') {
+        if (sessionId && transports.has(sessionId)) {
+          const transport = transports.get(sessionId)!;
+          if (transport instanceof StreamableHTTPServerTransport) {
+            await transport.handleRequest(req, res);
+            transports.delete(sessionId);
+          } else {
+            res.status(400).json({ error: 'Session is SSE, not streamable HTTP' });
+          }
+        } else {
+          res.status(404).json({ error: 'Session not found' });
+        }
+        return;
+      }
+
+      res.status(405).json({ error: 'Method not allowed' });
+    } catch (e) {
+      console.error('Streamable HTTP error:', e);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'internal error' });
+      }
     }
   });
 

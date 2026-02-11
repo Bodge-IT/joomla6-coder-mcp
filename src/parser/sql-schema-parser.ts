@@ -33,7 +33,7 @@ export interface TableSchema {
 
 export interface SchemaIndex {
   tables: TableSchema[];
-  tableMap: Map<string, TableSchema>;  // keyed by shortName
+  tableMap: Record<string, TableSchema>;  // keyed by shortName
 }
 
 export class SqlSchemaParser {
@@ -58,9 +58,9 @@ export class SqlSchemaParser {
       console.error('Error reading SQL directory:', e);
     }
 
-    const tableMap = new Map<string, TableSchema>();
+    const tableMap: Record<string, TableSchema> = {};
     for (const t of tables) {
-      tableMap.set(t.shortName, t);
+      tableMap[t.shortName] = t;
     }
 
     return { tables, tableMap };

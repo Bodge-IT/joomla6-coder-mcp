@@ -1,5 +1,9 @@
 node_modules/
 dist/
 cache/libraries/
+src/data/
+data/
+.intelephense-storage/
+.mcp-virtual/
 *.log
 .DS_Store
