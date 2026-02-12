@@ -262,7 +262,7 @@ function lspInputSchema(extraProps: Record<string, unknown> = {}) {
 registerTool(
   {
     name: 'joomla_diagnostics',
-    description: 'Analyse PHP code for errors, warnings, and type issues using Intelephense LSP. Provide either a filePath (on the server) or inline code.',
+    description: 'Analyse PHP code for errors, warnings, and type issues using Intelephense LSP. Provide either a filePath (absolute path on the server) or inline code.',
     inputSchema: lspInputSchema(),
   },
   async (args, ctx) => {

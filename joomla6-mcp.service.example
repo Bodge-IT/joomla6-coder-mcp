@@ -1,0 +1,16 @@
+[Unit]
+Description=Joomla 6 MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=<your-user>
+WorkingDirectory=/path/to/joomla6-mcp
+ExecStart=/usr/bin/node dist/index.js
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=PORT=3100
+
+[Install]
+WantedBy=multi-user.target

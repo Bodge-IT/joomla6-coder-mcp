@@ -7,3 +7,4 @@ data/
 .mcp-virtual/
 *.log
 .DS_Store
+CLAUDE.md

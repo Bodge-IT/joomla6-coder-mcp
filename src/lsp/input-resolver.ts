@@ -2,8 +2,8 @@
  * Resolves tool input to a file URI suitable for the LSP.
  *
  * Two modes:
- * - filePath: direct file on the server (Claude Code on the server). Converts to file:// URI.
- * - code: inline PHP string (Claude Code locally). Writes to a temp file in the
+ * - filePath: absolute path to a PHP file on the server. Converts to file:// URI.
+ * - code: inline PHP string (from remote clients). Writes to a temp file in the
  *   workspace so Intelephense can analyse it, returns the file:// URI.
  */
 

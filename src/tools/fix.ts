@@ -4,12 +4,12 @@ export async function runFix(
   return [
     '## PHP Fix (phpcbf)',
     '',
-    'PHP is not currently installed on the server.',
+    'PHP is not currently installed on this server.',
     'When PHP and phpcbf are available, this tool will:',
     '- Auto-fix coding standard violations',
     '- Return the corrected code',
     '- Support Joomla coding standards',
     '',
-    'To enable: install PHP 8.2+ and phpcs/phpcbf on the server, then restart the service.',
+    'To enable: install PHP 8.2+ and phpcs/phpcbf, then restart the service.',
   ].join('\n');
 }
