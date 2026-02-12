@@ -8,3 +8,4 @@ data/
 *.log
 .DS_Store
 CLAUDE.md
+.git-security/
