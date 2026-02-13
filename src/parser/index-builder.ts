@@ -25,7 +25,7 @@ export class IndexBuilder {
     this.parser = new PhpParser();
   }
 
-  async buildIndex(librariesPath: string, commit?: string): Promise<JoomlaIndex> {
+  async buildIndex(librariesPath: string, commit?: string, branch?: string): Promise<JoomlaIndex> {
     const classes: ParsedClass[] = [];
     const phpFiles = await this.findPhpFiles(librariesPath);
 
@@ -42,7 +42,7 @@ export class IndexBuilder {
     const eventMap = this.buildEventMap(classes);
 
     return {
-      version: '6.0-dev',
+      version: branch || 'unknown',
       lastSync: new Date().toISOString(),
       commit,
       classes,

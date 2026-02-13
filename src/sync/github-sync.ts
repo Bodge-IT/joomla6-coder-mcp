@@ -135,6 +135,10 @@ export class GitHubSync {
     return path.join(this.config.cacheDir, 'installation', 'sql');
   }
 
+  getBranch(): string {
+    return this.config.branch;
+  }
+
   getCacheDir(): string {
     return this.config.cacheDir;
   }

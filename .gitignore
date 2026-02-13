@@ -8,4 +8,5 @@ data/
 *.log
 .DS_Store
 CLAUDE.md
+joomla6-mcp.service
 .git-security/

@@ -1,4 +1,4 @@
-import { JoomlaIndex, IndexBuilder } from '../parser/index-builder.js';
+import { JoomlaIndex } from '../parser/index-builder.js';
 import { ParsedClass, ParsedMethod } from '../parser/php-parser.js';
 
 export interface LookupClassInput {

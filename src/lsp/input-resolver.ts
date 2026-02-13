@@ -84,7 +84,7 @@ export class InputResolver {
   }
 }
 
-function pathToFileUri(filePath: string): string {
+export function pathToFileUri(filePath: string): string {
   const normalised = filePath.replace(/\\/g, '/');
   if (normalised.startsWith('/')) {
     return 'file://' + normalised;

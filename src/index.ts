@@ -43,7 +43,7 @@ const toolContext: ToolContext = {
 };
 
 const registeredClients = new Map<string, any>();
-const authCodes = new Map<string, { clientId: string; redirectUri: string; codeChallenge?: string }>();
+const authCodes = new Map<string, { clientId: string; redirectUri: string }>();
 
 async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
   const existing = await indexBuilder.loadIndex(indexPath);
@@ -54,7 +54,7 @@ async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
   try {
     const si = await sync.getLastSyncInfo();
     if (si) {
-      const idx = await indexBuilder.buildIndex(sync.getLibrariesPath(), si.commit);
+      const idx = await indexBuilder.buildIndex(sync.getLibrariesPath(), si.commit, sync.getBranch());
       await indexBuilder.saveIndex(idx, indexPath);
       return idx;
     }
@@ -137,12 +137,12 @@ async function main() {
 
   // OAuth endpoints (auto-approve for trusted network)
   app.get('/.well-known/oauth-authorization-server', (req, res) => {
-    const b = 'http://' + req.headers.host;
+    const baseUrl = 'http://' + req.headers.host;
     res.json({
-      issuer: b,
-      authorization_endpoint: b + '/authorize',
-      token_endpoint: b + '/token',
-      registration_endpoint: b + '/register',
+      issuer: baseUrl,
+      authorization_endpoint: baseUrl + '/authorize',
+      token_endpoint: baseUrl + '/token',
+      registration_endpoint: baseUrl + '/register',
       response_types_supported: ['code'],
       grant_types_supported: ['authorization_code'],
       code_challenge_methods_supported: ['S256'],
@@ -157,12 +157,11 @@ async function main() {
   });
 
   app.get('/authorize', (req, res) => {
-    const { client_id, redirect_uri, state, code_challenge } = req.query;
+    const { client_id, redirect_uri, state } = req.query;
     const code = crypto.randomBytes(32).toString('hex');
     authCodes.set(code, {
       clientId: client_id as string,
       redirectUri: redirect_uri as string,
-      codeChallenge: code_challenge as string
     });
     const u = new URL(redirect_uri as string);
     u.searchParams.set('code', code);
@@ -172,11 +171,11 @@ async function main() {
 
   app.post('/token', (req, res) => {
     const { code } = req.body;
-    const ac = authCodes.get(code);
-    if (!ac) return res.status(400).json({ error: 'invalid_grant' });
+    const authCode = authCodes.get(code);
+    if (!authCode) return res.status(400).json({ error: 'invalid_grant' });
     authCodes.delete(code);
-    const at = crypto.randomBytes(32).toString('hex');
-    res.json({ access_token: at, token_type: 'Bearer', expires_in: 3600 });
+    const accessToken = crypto.randomBytes(32).toString('hex');
+    res.json({ access_token: accessToken, token_type: 'Bearer', expires_in: 3600 });
   });
 
   app.get('/health', (_req, res) => {

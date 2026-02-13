@@ -1,5 +1,5 @@
 import { JoomlaIndex } from '../parser/index-builder.js';
-import { ParsedClass, ParsedMethod } from '../parser/php-parser.js';
+import { ParsedClass, ParsedMethod, ParsedProperty } from '../parser/php-parser.js';
 
 export interface SearchInput {
   query: string;
@@ -165,7 +165,7 @@ function formatMethodSignature(method: ParsedMethod): string {
   return `${visibility} ${static_}function ${method.name}(${params})${returnType}`;
 }
 
-function formatPropertySignature(prop: any): string {
+function formatPropertySignature(prop: ParsedProperty): string {
   const static_ = prop.isStatic ? 'static ' : '';
   const type = prop.type ? `${prop.type} ` : '';
   return `${prop.visibility} ${static_}${type}$${prop.name}`;
@@ -192,12 +192,18 @@ export function formatSearchResults(output: SearchOutput, verbose: boolean = fal
     grouped[result.type].push(result);
   }
 
+  const typeLabels: Record<string, string> = {
+    class: 'Classes',
+    method: 'Methods',
+    constant: 'Constants',
+    property: 'Properties',
+  };
   const typeOrder = ['class', 'method', 'constant', 'property'];
 
   for (const type of typeOrder) {
     if (!grouped[type]) continue;
 
-    lines.push(`### ${type.charAt(0).toUpperCase() + type.slice(1)}es`);
+    lines.push(`### ${typeLabels[type]}`);
     lines.push('');
 
     for (const result of grouped[type]) {

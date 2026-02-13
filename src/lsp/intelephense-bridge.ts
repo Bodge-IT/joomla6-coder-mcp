@@ -10,7 +10,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { DiagnosticsWaiter, Diagnostic } from './diagnostics-waiter.js';
-import { InputResolver, ResolvedInput, fileUriToPath } from './input-resolver.js';
+import { InputResolver, ResolvedInput, fileUriToPath, pathToFileUri } from './input-resolver.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -146,7 +146,7 @@ export class IntelephenseBridge {
 
       this.initialised = true;
       this.initialising = false;
-      console.log('[intelephense] initialised, capabilities:', JSON.stringify(initResult?.capabilities?.completionProvider ? 'completion' : 'none'));
+      console.log('[intelephense] initialised, completion:', initResult?.capabilities?.completionProvider ? 'yes' : 'no');
     } catch (e) {
       this.initialising = false;
       throw e;
@@ -476,14 +476,6 @@ export class IntelephenseBridge {
 }
 
 // --- Helpers ---
-
-function pathToFileUri(filePath: string): string {
-  const normalised = filePath.replace(/\\/g, '/');
-  if (normalised.startsWith('/')) {
-    return 'file://' + normalised;
-  }
-  return 'file:///' + normalised;
-}
 
 function formatHoverContents(contents: HoverResult['contents']): string {
   if (typeof contents === 'string') return contents;

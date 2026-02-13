@@ -71,9 +71,7 @@ export function getServices(index: JoomlaIndex, input: GetServicesInput = {}): G
   };
 }
 
-function extractServiceInfo(cls: ParsedClass): ServiceInfo | null {
-  const registerMethod = cls.methods.find(m => m.name === 'register');
-
+function extractServiceInfo(cls: ParsedClass): ServiceInfo {
   return {
     name: cls.name,
     fqn: cls.fqn,

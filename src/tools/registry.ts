@@ -61,10 +61,14 @@ registerTool(
       }
     }
   },
-  async (_args, ctx) => {
+  async (args, ctx) => {
+    const force = (args as Record<string, unknown>).force === true;
+    if (!force && ctx.getIndex()) {
+      return { content: [{ type: 'text', text: 'Index already loaded. Use force=true to re-sync from GitHub.' }] };
+    }
     const r = await ctx.sync.sync();
     if (r.success) {
-      const idx = await ctx.indexBuilder.buildIndex(ctx.sync.getLibrariesPath(), r.lastCommit);
+      const idx = await ctx.indexBuilder.buildIndex(ctx.sync.getLibrariesPath(), r.lastCommit, ctx.sync.getBranch());
       await ctx.indexBuilder.saveIndex(idx, ctx.indexPath);
       ctx.setIndex(idx);
 
