@@ -18,18 +18,18 @@ npm run build
 npm start
 ```
 
-The server starts on port 3100 by default (configurable via `PORT` environment variable).
+The server starts on port 3500 by default (configurable via `PORT` environment variable). Port 3500 was chosen because previously used port (3100) can clash with Windows Hyper-V reserved port ranges.
 
 ### Connect Claude Code
 
 **Streamable HTTP (recommended):**
 ```bash
-claude mcp add joomla6 --transport streamable-http "http://localhost:3100/mcp" --scope user
+claude mcp add joomla6 --transport streamable-http "http://localhost:3500/mcp" --scope user
 ```
 
 **SSE (legacy, still supported):**
 ```bash
-claude mcp add joomla6 --transport sse "http://localhost:3100/sse" --scope user
+claude mcp add joomla6 --transport sse "http://localhost:3500/sse" --scope user
 ```
 
 ### First Run
@@ -79,7 +79,7 @@ All configuration is via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `3100` | Server port |
+| `PORT` | `3500` | Server port |
 | `HOST` | `0.0.0.0` | Bind address |
 | `DATA_DIR` | `./data` | Index and schema cache directory |
 | `CACHE_DIR` | `./cache/libraries` | Joomla source cache (sparse checkout) |
@@ -127,7 +127,7 @@ src/
 ## Health Check
 
 ```bash
-curl http://localhost:3100/health
+curl http://localhost:3500/health
 ```
 
 Returns index count, schema count, and LSP status.

@@ -10,7 +10,7 @@ ExecStart=/usr/bin/node dist/index.js
 Restart=on-failure
 RestartSec=10
 Environment=NODE_ENV=production
-Environment=PORT=3100
+Environment=PORT=3500
 
 [Install]
 WantedBy=multi-user.target

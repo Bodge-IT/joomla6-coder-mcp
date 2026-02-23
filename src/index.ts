@@ -16,7 +16,7 @@ import { SqlSchemaParser, SchemaIndex } from './parser/sql-schema-parser.js';
 import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = parseInt(process.env.PORT || '3100', 10);
+const PORT = parseInt(process.env.PORT || '3500', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 
