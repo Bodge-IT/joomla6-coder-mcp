@@ -1,4 +1,18 @@
 /**
+ * Strip the local cache directory prefix from file paths in tool output.
+ * Turns absolute server paths into relative Joomla source paths.
+ * e.g. /home/user/mcp/cache/libraries/libraries/src/Foo.php → libraries/src/Foo.php
+ */
+export function sanitisePath(filePath: string): string {
+  const marker = '/cache/libraries/';
+  const idx = filePath.indexOf(marker);
+  if (idx !== -1) {
+    return filePath.substring(idx + marker.length);
+  }
+  return filePath;
+}
+
+/**
  * Truncate a response string to a maximum character count.
  * Cuts at the nearest newline boundary to avoid breaking markdown formatting.
  * Appends a hint if truncation occurred.

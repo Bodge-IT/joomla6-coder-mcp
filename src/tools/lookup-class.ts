@@ -1,5 +1,6 @@
 import { JoomlaIndex } from '../parser/index-builder.js';
 import { ParsedClass, ParsedMethod } from '../parser/php-parser.js';
+import { sanitisePath } from './response-utils.js';
 
 export interface LookupClassInput {
   className: string;
@@ -130,7 +131,7 @@ export function formatClassSummary(cls: ParsedClass): string {
   }
 
   lines.push('');
-  lines.push(`**Source:** \`${cls.filePath}\``);
+  lines.push(`**Source:** \`${sanitisePath(cls.filePath)}\``);
   lines.push('');
   lines.push('*Use summary=false for full details including signatures and docblocks.*');
 
@@ -219,7 +220,7 @@ export function formatClassInfo(cls: ParsedClass): string {
   }
 
   lines.push('');
-  lines.push(`**Source:** \`${cls.filePath}\``);
+  lines.push(`**Source:** \`${sanitisePath(cls.filePath)}\``);
 
   return lines.join('\n');
 }

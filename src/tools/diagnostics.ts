@@ -1,5 +1,6 @@
 import { IntelephenseBridge } from '../lsp/index.js';
 import type { Diagnostic } from '../lsp/index.js';
+import { sanitisePath } from './response-utils.js';
 
 const SEVERITY_NAMES: Record<number, string> = {
   1: 'Error',
@@ -15,11 +16,11 @@ export async function runDiagnostics(
   const { diagnostics, resolved } = await bridge.getDiagnostics(input);
 
   if (diagnostics.length === 0) {
-    return `No issues found in ${resolved.isVirtual ? 'provided code' : resolved.filePath}`;
+    return `No issues found in ${resolved.isVirtual ? 'provided code' : sanitisePath(resolved.filePath)}`;
   }
 
   const lines: string[] = [];
-  lines.push(`## Diagnostics: ${resolved.isVirtual ? 'inline code' : resolved.filePath}`);
+  lines.push(`## Diagnostics: ${resolved.isVirtual ? 'inline code' : sanitisePath(resolved.filePath)}`);
   lines.push(`Found ${diagnostics.length} issue(s)`);
   lines.push('');
 
