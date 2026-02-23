@@ -91,8 +91,8 @@ export class IntelephenseBridge {
     try {
       await fs.mkdir(this.storagePath, { recursive: true });
 
-      // Find intelephense binary
-      const intelephenseBin = path.join(__dirname, '..', '..', 'node_modules', '.bin', 'intelephense');
+      // Use the library entry point directly for cross-platform compatibility
+      const intelephenseBin = path.join(__dirname, '..', '..', 'node_modules', 'intelephense', 'lib', 'intelephense.js');
 
       this.process = spawn('node', [intelephenseBin, '--stdio'], {
         cwd: this.workspaceRoot,

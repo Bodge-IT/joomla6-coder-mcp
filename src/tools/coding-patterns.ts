@@ -6,7 +6,9 @@ export type PatternCategory =
   | 'authentication'
   | 'routing'
   | 'assets'
-  | 'language';
+  | 'language'
+  | 'api'
+  | 'cli';
 
 export interface CodingPatternInput {
   category: PatternCategory;
@@ -507,6 +509,166 @@ $wa->addInlineScript('console.log("loaded");');`,
         'Place in media/com_example/joomla.asset.json',
         'Same name can have both script and style entries',
         'Dependencies are loaded automatically'
+      ]
+    }
+  ],
+  api: [
+    {
+      name: 'JSON API Controller',
+      description: 'Joomla 6 JSON API endpoint using the com_api pattern',
+      code: `namespace Vendor\\Component\\Example\\Api\\Controller;
+
+use Joomla\\CMS\\MVC\\Controller\\ApiController;
+
+class ItemsController extends ApiController
+{
+    protected $contentType = 'items';
+    protected $default_view = 'items';
+
+    public function index(): void
+    {
+        // GET /api/index.php/v1/example/items
+        parent::index();
+    }
+}`,
+      notes: [
+        'Extend ApiController for JSON API endpoints',
+        'Routes defined in component manifest <api> section',
+        'Responses automatically serialised to JSON:API format',
+        'Authentication via Bearer token or Basic auth'
+      ]
+    },
+    {
+      name: 'JSON API Model',
+      description: 'Model returning data for JSON API responses',
+      code: `namespace Vendor\\Component\\Example\\Api\\Model;
+
+use Joomla\\CMS\\MVC\\Model\\ListModel;
+
+class ItemsModel extends ListModel
+{
+    public function getListQuery()
+    {
+        $db = $this->getDatabase();
+        $query = $db->getQuery(true);
+
+        $query->select($db->quoteName(['a.id', 'a.title', 'a.state']))
+            ->from($db->quoteName('#__example_items', 'a'))
+            ->where($db->quoteName('a.state') . ' = 1');
+
+        return $query;
+    }
+}`,
+      notes: [
+        'API models live in src/Api/Model/ (not administrator)',
+        'Use standard ListModel/ItemModel base classes',
+        'Filter fields defined in populateState()',
+        'JSON:API serialiser maps properties automatically'
+      ]
+    },
+    {
+      name: 'API Route Registration',
+      description: 'Register API routes in component manifest',
+      code: `<!-- In your component XML manifest -->
+<api>
+    <files folder="api">
+        <folder>Controller</folder>
+        <folder>View</folder>
+    </files>
+</api>
+
+<!-- routes.json in api/ folder -->
+{
+    "routes": [
+        {
+            "type": "LIST",
+            "component": "com_example",
+            "controller": "Items",
+            "defaults": { "format": "json" }
+        },
+        {
+            "type": "ITEM",
+            "component": "com_example",
+            "controller": "Item",
+            "defaults": { "format": "json" }
+        }
+    ]
+}`,
+      notes: [
+        'routes.json maps HTTP verbs to controllers',
+        'LIST type handles collection endpoints (GET/POST)',
+        'ITEM type handles single-resource endpoints (GET/PATCH/DELETE)',
+        'API token authentication handled by Joomla core'
+      ]
+    }
+  ],
+  cli: [
+    {
+      name: 'CLI Application Command',
+      description: 'Creating a CLI command for Joomla console',
+      code: `namespace Vendor\\Component\\Example\\Administrator\\Command;
+
+use Joomla\\Console\\Command\\AbstractCommand;
+use Symfony\\Component\\Console\\Input\\InputInterface;
+use Symfony\\Component\\Console\\Output\\OutputInterface;
+use Symfony\\Component\\Console\\Input\\InputArgument;
+use Symfony\\Component\\Console\\Command\\Command;
+
+class ProcessItemsCommand extends AbstractCommand
+{
+    protected static $defaultName = 'example:process';
+
+    protected function configure(): void
+    {
+        $this->setDescription('Process example items');
+        $this->addArgument('limit', InputArgument::OPTIONAL, 'Max items to process', 100);
+    }
+
+    protected function doExecute(InputInterface $input, OutputInterface $output): int
+    {
+        $limit = (int) $input->getArgument('limit');
+        $output->writeln('<info>Processing up to ' . $limit . ' items...</info>');
+
+        // Do work here
+
+        $output->writeln('<comment>Done.</comment>');
+        return Command::SUCCESS;
+    }
+}`,
+      notes: [
+        'Extend AbstractCommand (Joomla wrapper over Symfony Console)',
+        'Register command in service provider via getServiceProvider()',
+        'Run via: php cli/joomla.php example:process',
+        'Use Command::SUCCESS / Command::FAILURE return codes'
+      ]
+    },
+    {
+      name: 'CLI Command Registration',
+      description: 'Register CLI commands in the service provider',
+      code: `// In your component service provider
+use Joomla\\CMS\\Extension\\Service\\Provider\\Console as ConsoleServiceProvider;
+
+public function register(Container $container): void
+{
+    $container->registerServiceProvider(new ConsoleServiceProvider());
+
+    $container->extend(
+        \\Joomla\\CMS\\Console\\Loader\\WritableLoaderInterface::class,
+        function (\\Joomla\\CMS\\Console\\Loader\\WritableLoaderInterface $loader, Container $container) {
+            $loader->add('example:process', new \\Joomla\\DI\\ServiceIdentifier(ProcessItemsCommand::class));
+            return $loader;
+        }
+    );
+
+    $container->share(ProcessItemsCommand::class, function (Container $container) {
+        return new ProcessItemsCommand();
+    });
+}`,
+      notes: [
+        'Commands registered via WritableLoaderInterface in DI container',
+        'Command name in loader must match $defaultName in the class',
+        'Service provider wires dependencies via constructor injection',
+        'Commands available globally via php cli/joomla.php'
       ]
     }
   ],

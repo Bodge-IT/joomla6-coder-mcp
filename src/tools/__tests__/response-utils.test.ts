@@ -22,11 +22,11 @@ describe('truncateResponse', () => {
     expect(result).toContain('Response truncated');
   });
 
-  it('defaults to 50000 char limit', () => {
+  it('defaults to 20000 char limit', () => {
     const short = 'short text';
     expect(truncateResponse(short)).toBe(short);
 
-    const long = 'line\n'.repeat(20000);
+    const long = 'line\n'.repeat(8000);
     const result = truncateResponse(long);
     expect(result.length).toBeLessThan(long.length);
     expect(result).toContain('Response truncated');

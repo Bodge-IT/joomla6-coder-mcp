@@ -19,6 +19,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3500', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+const MCP_INSTRUCTIONS = process.env.MCP_INSTRUCTIONS ||
+  'Joomla 6 API intelligence. The bundled index is pre-loaded — tools work immediately without running joomla_sync. ' +
+  'Use joomla_lookup_class to look up classes, joomla_search to find APIs, joomla_coding_patterns for examples, ' +
+  'joomla_schema for database tables, and joomla_list_events for plugin events. ' +
+  'Run joomla_sync only if you need the very latest dev branch changes.';
 
 let joomlaIndex: JoomlaIndex | null = null;
 let lspBridge: IntelephenseBridge | null = null;
@@ -92,7 +97,7 @@ async function loadSchema(): Promise<SchemaIndex | null> {
 function createServer(): Server {
   const server = new Server(
     { name: 'joomla6-mcp', version: '1.0.0' },
-    { capabilities: { tools: {} } }
+    { capabilities: { tools: {} }, instructions: MCP_INSTRUCTIONS }
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({

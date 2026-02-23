@@ -1,0 +1,4206 @@
+{
+  "tables": [
+    {
+      "name": "#__assets",
+      "shortName": "assets",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "parent_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set parent."
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set lft."
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set rgt."
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "The cached level in the nested tree."
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__extensions",
+      "shortName": "extensions",
+      "columns": [
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "package_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Parent package ID for extensions installed as a package."
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__languages",
+      "shortName": "languages",
+      "columns": [
+        {
+          "name": "lang_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lang_code",
+          "type": "char",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__menu",
+      "shortName": "menu",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "menutype",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__menu_types",
+      "shortName": "menu_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "menutype",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__modules",
+      "shortName": "modules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__modules_menu",
+      "shortName": "modules_menu",
+      "columns": [
+        {
+          "name": "moduleid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "menuid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__schemas",
+      "shortName": "schemas",
+      "columns": [
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "version_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__session",
+      "shortName": "session",
+      "columns": [
+        {
+          "name": "session_id",
+          "type": "varbinary",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__tags",
+      "shortName": "tags",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__template_overrides",
+      "shortName": "template_overrides",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "template",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__template_styles",
+      "shortName": "template_styles",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "template",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__updates",
+      "shortName": "updates",
+      "columns": [
+        {
+          "name": "update_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Available Updates"
+    },
+    {
+      "name": "#__tuf_metadata",
+      "shortName": "tuf_metadata",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "root",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "targets",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "snapshot",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "timestamp",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "mirrors",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Secure TUF Updates"
+    },
+    {
+      "name": "#__update_sites",
+      "shortName": "update_sites",
+      "columns": [
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Update Sites"
+    },
+    {
+      "name": "#__update_sites_extensions",
+      "shortName": "update_sites_extensions",
+      "columns": [
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Links extensions to update sites"
+    },
+    {
+      "name": "#__usergroups",
+      "shortName": "usergroups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Adjacency List Reference Id"
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set lft."
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set rgt."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__users",
+      "shortName": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__user_keys",
+      "shortName": "user_keys",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__user_notes",
+      "shortName": "user_notes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "catid",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__user_profiles",
+      "shortName": "user_profiles",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "profile_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Simple user profile storage table"
+    },
+    {
+      "name": "#__user_mfa",
+      "shortName": "user_mfa",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Multi-factor Authentication settings"
+    },
+    {
+      "name": "#__user_usergroup_map",
+      "shortName": "user_usergroup_map",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__users.id"
+        },
+        {
+          "name": "group_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__usergroups.id"
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__viewlevels",
+      "shortName": "viewlevels",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__workflows",
+      "shortName": "workflows",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__workflow_associations",
+      "shortName": "workflow_associations",
+      "columns": [
+        {
+          "name": "item_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Extension table id value"
+        },
+        {
+          "name": "stage_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__workflow_stages.id"
+        },
+        {
+          "name": "extension",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__workflow_stages",
+      "shortName": "workflow_stages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "workflow_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__workflow_transitions",
+      "shortName": "workflow_transitions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "workflow_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__banners",
+      "shortName": "banners",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "cid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "type",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__banner_clients",
+      "shortName": "banner_clients",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__banner_tracks",
+      "shortName": "banner_tracks",
+      "columns": [
+        {
+          "name": "track_date",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "track_type",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "banner_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "count",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__contact_details",
+      "shortName": "contact_details",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__content",
+      "shortName": "content",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__content_frontpage",
+      "shortName": "content_frontpage",
+      "columns": [
+        {
+          "name": "content_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "featured_up",
+          "type": "datetime",
+          "nullable": true,
+          "autoIncrement": false
+        },
+        {
+          "name": "featured_down",
+          "type": "datetime",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__content_rating",
+      "shortName": "content_rating",
+      "columns": [
+        {
+          "name": "content_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rating_sum",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rating_count",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lastip",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_filters",
+      "shortName": "finder_filters",
+      "columns": [
+        {
+          "name": "filter_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_links",
+      "shortName": "finder_links",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "url",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_links_terms",
+      "shortName": "finder_links_terms",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "weight",
+          "type": "float unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_logging",
+      "shortName": "finder_logging",
+      "columns": [
+        {
+          "name": "searchterm",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_taxonomy",
+      "shortName": "finder_taxonomy",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_taxonomy_map",
+      "shortName": "finder_taxonomy_map",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "node_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_terms",
+      "shortName": "finder_terms",
+      "columns": [
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_terms_common",
+      "shortName": "finder_terms_common",
+      "columns": [
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_tokens",
+      "shortName": "finder_tokens",
+      "columns": [
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "MEMORY",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_tokens_aggregate",
+      "shortName": "finder_tokens_aggregate",
+      "columns": [
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "MEMORY",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__finder_types",
+      "shortName": "finder_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__messages",
+      "shortName": "messages",
+      "columns": [
+        {
+          "name": "message_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id_from",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "user_id_to",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "folder_id",
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "date_time",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "state",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "priority",
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__messages_cfg",
+      "shortName": "messages_cfg",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "cfg_name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__newsfeeds",
+      "shortName": "newsfeeds",
+      "columns": [
+        {
+          "name": "catid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__privacy_requests",
+      "shortName": "privacy_requests",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "email",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__privacy_consents",
+      "shortName": "privacy_consents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "state",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "1",
+          "autoIncrement": false
+        },
+        {
+          "name": "created",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__redirect_links",
+      "shortName": "redirect_links",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "old_url",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__action_logs",
+      "shortName": "action_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "message_language_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__action_logs_extensions",
+      "shortName": "action_logs_extensions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "extension",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__action_log_config",
+      "shortName": "action_log_config",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "type_title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__action_logs_users",
+      "shortName": "action_logs_users",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "notify",
+          "type": "tinyint UNSIGNED",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "extensions",
+          "type": "text",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__scheduler_tasks",
+      "shortName": "scheduler_tasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__scheduler_logs",
+      "shortName": "scheduler_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "taskname",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__schemaorg",
+      "shortName": "schemaorg",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "itemId",
+          "type": "int unsigned",
+          "nullable": true,
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__guidedtours",
+      "shortName": "guidedtours",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__guidedtour_steps",
+      "shortName": "guidedtour_steps",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "tour_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__associations",
+      "shortName": "associations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "A reference to the associated item."
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__categories",
+      "shortName": "categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__content_types",
+      "shortName": "content_types",
+      "columns": [
+        {
+          "name": "type_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "type_title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__contentitem_tag_map",
+      "shortName": "contentitem_tag_map",
+      "columns": [
+        {
+          "name": "type_alias",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Maps items from content tables to tags"
+    },
+    {
+      "name": "#__fields",
+      "shortName": "fields",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__fields_categories",
+      "shortName": "fields_categories",
+      "columns": [
+        {
+          "name": "field_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "category_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__fields_groups",
+      "shortName": "fields_groups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__fields_values",
+      "shortName": "fields_values",
+      "columns": [
+        {
+          "name": "field_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "item_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__overrider",
+      "shortName": "overrider",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "constant",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__postinstall_messages",
+      "shortName": "postinstall_messages",
+      "columns": [
+        {
+          "name": "postinstall_message_id",
+          "type": "bigint unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "extension_id",
+          "type": "bigint",
+          "nullable": false,
+          "defaultValue": "700",
+          "autoIncrement": false,
+          "comment": "FK to #__extensions"
+        },
+        {
+          "name": "title_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__ucm_base",
+      "shortName": "ucm_base",
+      "columns": [
+        {
+          "name": "ucm_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_item_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_type_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_language_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__ucm_content",
+      "shortName": "ucm_content",
+      "columns": [
+        {
+          "name": "core_content_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "core_type_alias",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Contains core content data in name spaced fields"
+    },
+    {
+      "name": "#__history",
+      "shortName": "history",
+      "columns": [
+        {
+          "name": "version_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "item_id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "#__webauthn_credentials",
+      "shortName": "webauthn_credentials",
+      "columns": [
+        {
+          "name": "id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "name": "#__mail_templates",
+      "shortName": "mail_templates",
+      "columns": [
+        {
+          "name": "template_id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    }
+  ],
+  "tableMap": {
+    "assets": {
+      "name": "#__assets",
+      "shortName": "assets",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "parent_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set parent."
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set lft."
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set rgt."
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "The cached level in the nested tree."
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "extensions": {
+      "name": "#__extensions",
+      "shortName": "extensions",
+      "columns": [
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "package_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Parent package ID for extensions installed as a package."
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "languages": {
+      "name": "#__languages",
+      "shortName": "languages",
+      "columns": [
+        {
+          "name": "lang_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lang_code",
+          "type": "char",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "menu": {
+      "name": "#__menu",
+      "shortName": "menu",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "menutype",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "menu_types": {
+      "name": "#__menu_types",
+      "shortName": "menu_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "menutype",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "modules": {
+      "name": "#__modules",
+      "shortName": "modules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "modules_menu": {
+      "name": "#__modules_menu",
+      "shortName": "modules_menu",
+      "columns": [
+        {
+          "name": "moduleid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "menuid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "schemas": {
+      "name": "#__schemas",
+      "shortName": "schemas",
+      "columns": [
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "version_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "session": {
+      "name": "#__session",
+      "shortName": "session",
+      "columns": [
+        {
+          "name": "session_id",
+          "type": "varbinary",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "tags": {
+      "name": "#__tags",
+      "shortName": "tags",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "template_overrides": {
+      "name": "#__template_overrides",
+      "shortName": "template_overrides",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "template",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "template_styles": {
+      "name": "#__template_styles",
+      "shortName": "template_styles",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "template",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "updates": {
+      "name": "#__updates",
+      "shortName": "updates",
+      "columns": [
+        {
+          "name": "update_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Available Updates"
+    },
+    "tuf_metadata": {
+      "name": "#__tuf_metadata",
+      "shortName": "tuf_metadata",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "root",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "targets",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "snapshot",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "timestamp",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        },
+        {
+          "name": "mirrors",
+          "type": "text",
+          "nullable": true,
+          "defaultValue": "NULL",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Secure TUF Updates"
+    },
+    "update_sites": {
+      "name": "#__update_sites",
+      "shortName": "update_sites",
+      "columns": [
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Update Sites"
+    },
+    "update_sites_extensions": {
+      "name": "#__update_sites_extensions",
+      "shortName": "update_sites_extensions",
+      "columns": [
+        {
+          "name": "update_site_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "extension_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Links extensions to update sites"
+    },
+    "usergroups": {
+      "name": "#__usergroups",
+      "shortName": "usergroups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Adjacency List Reference Id"
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set lft."
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Nested set rgt."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "users": {
+      "name": "#__users",
+      "shortName": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "user_keys": {
+      "name": "#__user_keys",
+      "shortName": "user_keys",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "user_notes": {
+      "name": "#__user_notes",
+      "shortName": "user_notes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "catid",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "user_profiles": {
+      "name": "#__user_profiles",
+      "shortName": "user_profiles",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "profile_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Simple user profile storage table"
+    },
+    "user_mfa": {
+      "name": "#__user_mfa",
+      "shortName": "user_mfa",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Multi-factor Authentication settings"
+    },
+    "user_usergroup_map": {
+      "name": "#__user_usergroup_map",
+      "shortName": "user_usergroup_map",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__users.id"
+        },
+        {
+          "name": "group_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__usergroups.id"
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "viewlevels": {
+      "name": "#__viewlevels",
+      "shortName": "viewlevels",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "workflows": {
+      "name": "#__workflows",
+      "shortName": "workflows",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "workflow_associations": {
+      "name": "#__workflow_associations",
+      "shortName": "workflow_associations",
+      "columns": [
+        {
+          "name": "item_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "Extension table id value"
+        },
+        {
+          "name": "stage_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "Foreign Key to #__workflow_stages.id"
+        },
+        {
+          "name": "extension",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "workflow_stages": {
+      "name": "#__workflow_stages",
+      "shortName": "workflow_stages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "workflow_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "workflow_transitions": {
+      "name": "#__workflow_transitions",
+      "shortName": "workflow_transitions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int",
+          "nullable": true,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "workflow_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "published",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "banners": {
+      "name": "#__banners",
+      "shortName": "banners",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "cid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "type",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "banner_clients": {
+      "name": "#__banner_clients",
+      "shortName": "banner_clients",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "banner_tracks": {
+      "name": "#__banner_tracks",
+      "shortName": "banner_tracks",
+      "columns": [
+        {
+          "name": "track_date",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "track_type",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "banner_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "count",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "contact_details": {
+      "name": "#__contact_details",
+      "shortName": "contact_details",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "content": {
+      "name": "#__content",
+      "shortName": "content",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "content_frontpage": {
+      "name": "#__content_frontpage",
+      "shortName": "content_frontpage",
+      "columns": [
+        {
+          "name": "content_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "ordering",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "featured_up",
+          "type": "datetime",
+          "nullable": true,
+          "autoIncrement": false
+        },
+        {
+          "name": "featured_down",
+          "type": "datetime",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "content_rating": {
+      "name": "#__content_rating",
+      "shortName": "content_rating",
+      "columns": [
+        {
+          "name": "content_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rating_sum",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rating_count",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lastip",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_filters": {
+      "name": "#__finder_filters",
+      "shortName": "finder_filters",
+      "columns": [
+        {
+          "name": "filter_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_links": {
+      "name": "#__finder_links",
+      "shortName": "finder_links",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "url",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_links_terms": {
+      "name": "#__finder_links_terms",
+      "shortName": "finder_links_terms",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "weight",
+          "type": "float unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_logging": {
+      "name": "#__finder_logging",
+      "shortName": "finder_logging",
+      "columns": [
+        {
+          "name": "searchterm",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_taxonomy": {
+      "name": "#__finder_taxonomy",
+      "shortName": "finder_taxonomy",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "parent_id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "defaultValue": "'0'",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_taxonomy_map": {
+      "name": "#__finder_taxonomy_map",
+      "shortName": "finder_taxonomy_map",
+      "columns": [
+        {
+          "name": "link_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "node_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_terms": {
+      "name": "#__finder_terms",
+      "shortName": "finder_terms",
+      "columns": [
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_terms_common": {
+      "name": "#__finder_terms_common",
+      "shortName": "finder_terms_common",
+      "columns": [
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "finder_tokens": {
+      "name": "#__finder_tokens",
+      "shortName": "finder_tokens",
+      "columns": [
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "MEMORY",
+      "charset": "utf8mb4"
+    },
+    "finder_tokens_aggregate": {
+      "name": "#__finder_tokens_aggregate",
+      "shortName": "finder_tokens_aggregate",
+      "columns": [
+        {
+          "name": "term_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "term",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "MEMORY",
+      "charset": "utf8mb4"
+    },
+    "finder_types": {
+      "name": "#__finder_types",
+      "shortName": "finder_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "messages": {
+      "name": "#__messages",
+      "shortName": "messages",
+      "columns": [
+        {
+          "name": "message_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id_from",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "user_id_to",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "folder_id",
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "date_time",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "state",
+          "type": "tinyint",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "priority",
+          "type": "tinyint unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "messages_cfg": {
+      "name": "#__messages_cfg",
+      "shortName": "messages_cfg",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "cfg_name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "newsfeeds": {
+      "name": "#__newsfeeds",
+      "shortName": "newsfeeds",
+      "columns": [
+        {
+          "name": "catid",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "privacy_requests": {
+      "name": "#__privacy_requests",
+      "shortName": "privacy_requests",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "email",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "privacy_consents": {
+      "name": "#__privacy_consents",
+      "shortName": "privacy_consents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "user_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "state",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "1",
+          "autoIncrement": false
+        },
+        {
+          "name": "created",
+          "type": "datetime",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "subject",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "redirect_links": {
+      "name": "#__redirect_links",
+      "shortName": "redirect_links",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "old_url",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "action_logs": {
+      "name": "#__action_logs",
+      "shortName": "action_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "message_language_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "action_logs_extensions": {
+      "name": "#__action_logs_extensions",
+      "shortName": "action_logs_extensions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "extension",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "action_log_config": {
+      "name": "#__action_log_config",
+      "shortName": "action_log_config",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "type_title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "action_logs_users": {
+      "name": "#__action_logs_users",
+      "shortName": "action_logs_users",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int UNSIGNED",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "notify",
+          "type": "tinyint UNSIGNED",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "extensions",
+          "type": "text",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "scheduler_tasks": {
+      "name": "#__scheduler_tasks",
+      "shortName": "scheduler_tasks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "scheduler_logs": {
+      "name": "#__scheduler_logs",
+      "shortName": "scheduler_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "taskname",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "schemaorg": {
+      "name": "#__schemaorg",
+      "shortName": "schemaorg",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "itemId",
+          "type": "int unsigned",
+          "nullable": true,
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "guidedtours": {
+      "name": "#__guidedtours",
+      "shortName": "guidedtours",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "guidedtour_steps": {
+      "name": "#__guidedtour_steps",
+      "shortName": "guidedtour_steps",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "tour_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "associations": {
+      "name": "#__associations",
+      "shortName": "associations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false,
+          "comment": "A reference to the associated item."
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "categories": {
+      "name": "#__categories",
+      "shortName": "categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false,
+          "comment": "FK to the #__assets table."
+        },
+        {
+          "name": "parent_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "lft",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "rgt",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "level",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "path",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "content_types": {
+      "name": "#__content_types",
+      "shortName": "content_types",
+      "columns": [
+        {
+          "name": "type_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "type_title",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "contentitem_tag_map": {
+      "name": "#__contentitem_tag_map",
+      "shortName": "contentitem_tag_map",
+      "columns": [
+        {
+          "name": "type_alias",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Maps items from content tables to tags"
+    },
+    "fields": {
+      "name": "#__fields",
+      "shortName": "fields",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "fields_categories": {
+      "name": "#__fields_categories",
+      "shortName": "fields_categories",
+      "columns": [
+        {
+          "name": "field_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "category_id",
+          "type": "int",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "fields_groups": {
+      "name": "#__fields_groups",
+      "shortName": "fields_groups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "asset_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "defaultValue": "0",
+          "autoIncrement": false
+        },
+        {
+          "name": "context",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "fields_values": {
+      "name": "#__fields_values",
+      "shortName": "fields_values",
+      "columns": [
+        {
+          "name": "field_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "item_id",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "overrider": {
+      "name": "#__overrider",
+      "shortName": "overrider",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": true,
+          "comment": "Primary Key"
+        },
+        {
+          "name": "constant",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "postinstall_messages": {
+      "name": "#__postinstall_messages",
+      "shortName": "postinstall_messages",
+      "columns": [
+        {
+          "name": "postinstall_message_id",
+          "type": "bigint unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "extension_id",
+          "type": "bigint",
+          "nullable": false,
+          "defaultValue": "700",
+          "autoIncrement": false,
+          "comment": "FK to #__extensions"
+        },
+        {
+          "name": "title_key",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "ucm_base": {
+      "name": "#__ucm_base",
+      "shortName": "ucm_base",
+      "columns": [
+        {
+          "name": "ucm_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_item_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_type_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        },
+        {
+          "name": "ucm_language_id",
+          "type": "int",
+          "nullable": false,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "ucm_content": {
+      "name": "#__ucm_content",
+      "shortName": "ucm_content",
+      "columns": [
+        {
+          "name": "core_content_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "core_type_alias",
+          "type": "varchar",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4",
+      "comment": "Contains core content data in name spaced fields"
+    },
+    "history": {
+      "name": "#__history",
+      "shortName": "history",
+      "columns": [
+        {
+          "name": "version_id",
+          "type": "int unsigned",
+          "nullable": false,
+          "autoIncrement": true
+        },
+        {
+          "name": "item_id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": []
+    },
+    "webauthn_credentials": {
+      "name": "#__webauthn_credentials",
+      "shortName": "webauthn_credentials",
+      "columns": [
+        {
+          "name": "id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    "mail_templates": {
+      "name": "#__mail_templates",
+      "shortName": "mail_templates",
+      "columns": [
+        {
+          "name": "template_id",
+          "type": "VARCHAR",
+          "nullable": true,
+          "autoIncrement": false
+        }
+      ],
+      "indexes": [],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    }
+  }
+}

@@ -53,7 +53,7 @@ function registerTool(def: ToolDefinition, handler: ToolHandler): void {
 registerTool(
   {
     name: 'joomla_sync',
-    description: 'Sync Joomla 6 libraries from GitHub. Run this first to build the index. Use force=true to re-sync even if cache exists.',
+    description: 'Sync Joomla 6 libraries from GitHub and rebuild the API index. Only needed to update to the latest dev branch — the bundled index works without syncing. Use force=true to re-sync even if cache exists.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -93,20 +93,20 @@ registerTool(
 registerTool(
   {
     name: 'joomla_lookup_class',
-    description: 'Look up a Joomla 6 class, interface, or trait by name. Returns full details including methods, properties, constants, and docblocks. Supports FQN, class name, or partial match.',
+    description: 'Look up a Joomla 6 class, interface, or trait by name. Returns full details including methods, properties, constants, and docblocks. Supports FQN, class name, or partial match. Use summary=true for a compact list of members.',
     inputSchema: {
       type: 'object',
       properties: {
         className: { type: 'string', description: 'Class name, FQN, or partial match' },
         methodName: { type: 'string', description: 'Optional: specific method to look up' },
-        summary: { type: 'boolean', description: 'Return compact format with names only (default: false)' }
+        summary: { type: 'boolean', description: 'Return compact format with names only — recommended for large classes (default: false)' }
       },
       required: ['className']
     }
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
-    if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
+    if (!index) return { content: [{ type: 'text', text: 'Index not loaded. The bundled index should have loaded automatically — check server logs.' }], isError: true };
     const r = lookupClass(index, args as any);
     const useSummary = (args as any).summary === true;
     if (r.found && r.method && r.class) {
@@ -142,7 +142,7 @@ registerTool(
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
-    if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
+    if (!index) return { content: [{ type: 'text', text: 'Index not loaded. The bundled index should have loaded automatically — check server logs.' }], isError: true };
     const verbose = (args as any).verbose === true;
     return { content: [{ type: 'text', text: truncateResponse(formatSearchResults(search(index, args as any), verbose)) }] };
   }
@@ -165,7 +165,7 @@ registerTool(
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
-    if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
+    if (!index) return { content: [{ type: 'text', text: 'Index not loaded. The bundled index should have loaded automatically — check server logs.' }], isError: true };
     const summary = (args as any).summary !== false; // default true
     const result = listEvents(index, args as any);
     return { content: [{ type: 'text', text: truncateResponse(formatEventsResult(result, summary)) }] };
@@ -187,7 +187,7 @@ registerTool(
   },
   async (args, ctx) => {
     const index = ctx.getIndex();
-    if (!index) return { content: [{ type: 'text', text: 'Index not built. Run joomla_sync first.' }], isError: true };
+    if (!index) return { content: [{ type: 'text', text: 'Index not loaded. The bundled index should have loaded automatically — check server logs.' }], isError: true };
     return { content: [{ type: 'text', text: truncateResponse(formatServicesResult(getServices(index, args as any))) }] };
   }
 );
@@ -220,11 +220,11 @@ registerTool(
 registerTool(
   {
     name: 'joomla_coding_patterns',
-    description: 'Get Joomla 6 coding patterns and examples for a category. Categories: mvc, events, forms, database, authentication, routing, assets, language. Omit category to list all available.',
+    description: 'Get Joomla 6 coding patterns and examples for a category. Categories: mvc, events, forms, database, authentication, routing, assets, language, api, cli. Omit category to list all available.',
     inputSchema: {
       type: 'object',
       properties: {
-        category: { type: 'string', enum: ['mvc', 'events', 'forms', 'database', 'authentication', 'routing', 'assets', 'language'], description: 'Pattern category' }
+        category: { type: 'string', enum: ['mvc', 'events', 'forms', 'database', 'authentication', 'routing', 'assets', 'language', 'api', 'cli'], description: 'Pattern category' }
       }
     }
   },
@@ -363,7 +363,7 @@ registerTool(
   async (args, ctx) => {
     const schema = ctx.getSchema();
     if (!schema) {
-      return { content: [{ type: 'text', text: 'Schema not available. Run joomla_sync first to fetch SQL files.' }], isError: true };
+      return { content: [{ type: 'text', text: 'Schema not loaded. The bundled schema should have loaded automatically — run joomla_sync to rebuild if missing.' }], isError: true };
     }
     const text = lookupSchema(schema, args as any);
     return { content: [{ type: 'text', text: truncateResponse(text) }] };

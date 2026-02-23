@@ -6,6 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build-index": "npm run build && node dist/scripts/build-index.js",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
