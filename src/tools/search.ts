@@ -171,6 +171,69 @@ function formatPropertySignature(prop: ParsedProperty): string {
   return `${prop.visibility} ${static_}${type}$${prop.name}`;
 }
 
+// Concept → tool suggestion map for zero-result fallbacks
+const zeroResultFallbacks: Array<{ keywords: string[]; suggestion: string }> = [
+  {
+    keywords: ['webservices', 'web services', 'webservice', 'rest api', 'api route', 'apiroute'],
+    suggestion: '`joomla_coding_patterns(category: "api")` for Web Services plugin patterns, or `joomla_list_events(filter: "api")` for API-related events'
+  },
+  {
+    keywords: ['event', 'plugin', 'trigger', 'dispatch', 'subscriber'],
+    suggestion: '`joomla_list_events()` to browse all event classes, or `joomla_coding_patterns(category: "events")` for plugin/event patterns'
+  },
+  {
+    keywords: ['form', 'field', 'fieldset', 'validate', 'validation'],
+    suggestion: '`joomla_coding_patterns(category: "forms")` for form field and validation patterns'
+  },
+  {
+    keywords: ['database', 'query', 'dbo', 'sql', 'select', 'insert', 'update', 'delete'],
+    suggestion: '`joomla_coding_patterns(category: "database")` for database query patterns, or `joomla_schema(listAll: true)` to browse table schemas'
+  },
+  {
+    keywords: ['auth', 'login', 'authentication', 'session', 'token', 'user'],
+    suggestion: '`joomla_coding_patterns(category: "authentication")` for authentication patterns'
+  },
+  {
+    keywords: ['route', 'router', 'url', 'routing', 'link'],
+    suggestion: '`joomla_coding_patterns(category: "routing")` for URL routing patterns'
+  },
+  {
+    keywords: ['asset', 'css', 'javascript', 'script', 'style', 'webasset'],
+    suggestion: '`joomla_coding_patterns(category: "assets")` for asset management patterns'
+  },
+  {
+    keywords: ['language', 'translation', 'i18n', 'locale', 'text'],
+    suggestion: '`joomla_coding_patterns(category: "language")` for language and translation patterns'
+  },
+  {
+    keywords: ['cli', 'command', 'console', 'terminal'],
+    suggestion: '`joomla_coding_patterns(category: "cli")` for CLI command patterns'
+  },
+  {
+    keywords: ['mvc', 'model', 'view', 'controller', 'component', 'com_'],
+    suggestion: '`joomla_coding_patterns(category: "mvc")` for MVC patterns, or `joomla_extension_structure(type: "component")` for component scaffolding'
+  },
+  {
+    keywords: ['service', 'di', 'container', 'dependency', 'provider', 'factory'],
+    suggestion: '`joomla_get_services()` to browse DI service providers and factories'
+  },
+  {
+    keywords: ['schema', 'table', 'column', 'migration'],
+    suggestion: '`joomla_schema(listAll: true)` to browse all database table schemas'
+  },
+];
+
+function getZeroResultSuggestions(query: string): string[] {
+  const q = query.toLowerCase();
+  const suggestions: string[] = [];
+  for (const entry of zeroResultFallbacks) {
+    if (entry.keywords.some(kw => q.includes(kw))) {
+      suggestions.push(entry.suggestion);
+    }
+  }
+  return suggestions;
+}
+
 export function formatSearchResults(output: SearchOutput, verbose: boolean = false): string {
   const lines: string[] = [];
 
@@ -180,6 +243,20 @@ export function formatSearchResults(output: SearchOutput, verbose: boolean = fal
 
   if (output.results.length === 0) {
     lines.push('No results found.');
+    const suggestions = getZeroResultSuggestions(output.query);
+    if (suggestions.length > 0) {
+      lines.push('');
+      lines.push('**Try instead:**');
+      for (const s of suggestions) {
+        lines.push(`- ${s}`);
+      }
+    } else {
+      lines.push('');
+      lines.push('**Try instead:**');
+      lines.push('- `joomla_coding_patterns()` to browse patterns by concept (mvc, events, forms, database, authentication, routing, assets, language, api, cli)');
+      lines.push('- `joomla_list_events()` to browse event classes');
+      lines.push('- `joomla_get_services()` to browse DI service providers');
+    }
     return lines.join('\n');
   }
 

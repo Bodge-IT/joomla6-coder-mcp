@@ -21,8 +21,10 @@ const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 const MCP_INSTRUCTIONS = process.env.MCP_INSTRUCTIONS ||
   'Joomla 6 API intelligence. The bundled index is pre-loaded — tools work immediately without running joomla_sync. ' +
-  'Use joomla_lookup_class to look up classes, joomla_search to find APIs, joomla_coding_patterns for examples, ' +
-  'joomla_schema for database tables, and joomla_list_events for plugin events. ' +
+  'Two entry paths: ' +
+  '(1) Exploring a concept? → Start with joomla_coding_patterns (categories: mvc, events, forms, database, authentication, routing, assets, language, api, cli), then use joomla_search for specific classes mentioned in the patterns. ' +
+  '(2) Know the class name? → Start with joomla_search, then joomla_lookup_class for full API details. ' +
+  'Also: joomla_schema for database tables, joomla_list_events for plugin events, joomla_get_services for DI providers. ' +
   'Run joomla_sync only if you need the very latest dev branch changes.';
 
 let joomlaIndex: JoomlaIndex | null = null;

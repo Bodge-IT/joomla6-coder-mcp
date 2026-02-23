@@ -739,6 +739,20 @@ export function getCodingPatterns(input: CodingPatternInput): CodingPatternResul
   };
 }
 
+// Extract short class names from `use Joomla\...\ClassName;` statements in code examples
+function extractJoomlaClassRefs(code: string): string[] {
+  const refs: string[] = [];
+  // Matches: use Joomla\...\ClassName;  (backslashes may be single or doubled in template literals)
+  const useRegex = /use Joomla(?:[\\]+[A-Za-z0-9]+)+[\\]+([A-Z][A-Za-z0-9]+);/g;
+  let match: RegExpExecArray | null;
+  while ((match = useRegex.exec(code)) !== null) {
+    if (!refs.includes(match[1])) {
+      refs.push(match[1]);
+    }
+  }
+  return refs;
+}
+
 export function formatCodingPatterns(result: CodingPatternResult): string {
   const lines: string[] = [];
 
@@ -760,6 +774,12 @@ export function formatCodingPatterns(result: CodingPatternResult): string {
       for (const note of pattern.notes) {
         lines.push(`- ${note}`);
       }
+      lines.push('');
+    }
+
+    const classRefs = extractJoomlaClassRefs(pattern.code);
+    if (classRefs.length > 0) {
+      lines.push('**Navigate:** → ' + classRefs.map(c => `\`joomla_lookup_class("${c}")\``).join(', '));
       lines.push('');
     }
   }
