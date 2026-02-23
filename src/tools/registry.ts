@@ -118,7 +118,10 @@ registerTool(
     }
     let text = r.message;
     if (r.suggestions && r.suggestions.length > 0) {
-      text += '\n\nSuggestions:\n' + r.suggestions.map(s => `- ${s}`).join('\n');
+      text += '\n\nDid you mean:\n' + r.suggestions.map(s => `- \`${s}\``).join('\n');
+    } else {
+      const q = (args as any).className;
+      text += `\n\n**Try instead:** \`joomla_search("${q}")\` for broader results across class names, methods, and docblocks.`;
     }
     return { content: [{ type: 'text', text: truncateResponse(text) }] };
   }
