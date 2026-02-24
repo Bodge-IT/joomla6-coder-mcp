@@ -139,7 +139,10 @@ async function main() {
 
   const app = express();
   app.use(cors());
-  app.use(express.json());
+  app.use((req, res, next) => {
+    if (req.path === '/mcp') return next();
+    express.json()(req, res, next);
+  });
   app.use((req, _res, next) => { console.log(req.method + ' ' + req.url); next(); });
 
   // OAuth endpoints (auto-approve for trusted network)
