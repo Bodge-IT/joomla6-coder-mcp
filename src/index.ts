@@ -13,6 +13,7 @@ import { GitHubSync } from './sync/github-sync.js';
 import { IndexBuilder, JoomlaIndex } from './parser/index-builder.js';
 import { IntelephenseBridge } from './lsp/index.js';
 import { SqlSchemaParser, SchemaIndex } from './parser/sql-schema-parser.js';
+import { WebComponentIndex } from './parser/js-component-parser.js';
 import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,11 +31,13 @@ const MCP_INSTRUCTIONS = process.env.MCP_INSTRUCTIONS ||
 let joomlaIndex: JoomlaIndex | null = null;
 let lspBridge: IntelephenseBridge | null = null;
 let schemaIndex: SchemaIndex | null = null;
+let webComponentIndex: WebComponentIndex | null = null;
 const sync = new GitHubSync();
 const indexBuilder = new IndexBuilder();
 const schemaParser = new SqlSchemaParser();
 const indexPath = path.join(DATA_DIR, 'index.json');
 const schemaPath = path.join(DATA_DIR, 'schema.json');
+const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json');
 
 const toolContext: ToolContext = {
   getIndex: () => joomlaIndex,
@@ -47,6 +50,9 @@ const toolContext: ToolContext = {
   setSchema: (s) => { schemaIndex = s; },
   schemaParser,
   schemaPath,
+  getWebComponentIndex: () => webComponentIndex,
+  setWebComponentIndex: (idx) => { webComponentIndex = idx; },
+  webComponentIndexPath,
 };
 
 const registeredClients = new Map<string, any>();
@@ -64,6 +70,18 @@ async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
       const idx = await indexBuilder.buildIndex(sync.getLibrariesPath(), si.commit, sync.getBranch());
       await indexBuilder.saveIndex(idx, indexPath);
       return idx;
+    }
+  } catch { /* no cached index */ }
+  return null;
+}
+
+async function loadWebComponents(): Promise<WebComponentIndex | null> {
+  try {
+    const raw = await fs.readFile(webComponentIndexPath, 'utf-8');
+    const index: WebComponentIndex = JSON.parse(raw);
+    if (index.components.length > 0) {
+      console.log(`Loaded web component index: ${index.components.length} components`);
+      return index;
     }
   } catch { /* no cached index */ }
   return null;
@@ -133,6 +151,7 @@ async function startLspBridge(): Promise<void> {
 async function main() {
   joomlaIndex = await loadOrBuildIndex();
   schemaIndex = await loadSchema();
+  webComponentIndex = await loadWebComponents();
 
   // Start LSP bridge in background (non-blocking)
   startLspBridge().catch(console.error);
@@ -191,11 +210,13 @@ async function main() {
   app.get('/health', (_req, res) => {
     const indexCount = joomlaIndex?.classes.length ?? 0;
     const schemaCount = schemaIndex?.tables.length ?? 0;
+    const webComponentCount = webComponentIndex?.components.length ?? 0;
     const lspStatus = lspBridge?.getStatus() ?? { ready: false, pid: null, restarts: 0 };
     res.json({
       status: 'ok',
       index: { classes: indexCount },
       schema: { tables: schemaCount },
+      webComponents: { components: webComponentCount },
       lsp: lspStatus,
     });
   });
@@ -303,11 +324,22 @@ async function main() {
     }
   });
 
-  app.listen(PORT, HOST, () => console.log(`joomla6-mcp up on ${HOST}:${PORT}`));
+  const httpServer = app.listen(PORT, HOST, () => console.log(`joomla6-mcp up on ${HOST}:${PORT}`));
 
-  // Graceful shutdown
+  httpServer.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} already in use. Retrying in 3s...`);
+      setTimeout(() => httpServer.listen(PORT, HOST), 3000);
+    } else {
+      console.error('Server error:', err);
+      process.exit(1);
+    }
+  });
+
+  // Graceful shutdown — close HTTP server so port is released
   const shutdown = async () => {
     console.log('Shutting down...');
+    httpServer.close();
     if (lspBridge) await lspBridge.stop();
     process.exit(0);
   };
