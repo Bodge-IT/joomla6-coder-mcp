@@ -16,6 +16,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { IndexBuilder } from '../parser/index-builder.js';
 import { SqlSchemaParser } from '../parser/sql-schema-parser.js';
+import { JsComponentParser, WebComponentIndex } from '../parser/js-component-parser.js';
 import { GitHubSync } from '../sync/github-sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -25,8 +26,10 @@ const DATA_DIR = process.env.DATA_DIR || path.join(PROJECT_ROOT, 'data');
 const sync = new GitHubSync();
 const librariesPath = process.env.LIBRARIES_PATH || sync.getLibrariesPath();
 const sqlPath = process.env.SQL_DIR || sync.getSqlPath();
+const mediaSourcePath = process.env.MEDIA_SOURCE_DIR || sync.getMediaSourcePath();
 const indexPath = path.join(DATA_DIR, 'index.json');
 const schemaPath = path.join(DATA_DIR, 'schema.json');
+const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json');
 
 const CACHE_MARKER = '/cache/libraries/';
 
@@ -97,6 +100,30 @@ async function main(): Promise<void> {
   } catch {
     console.warn('WARNING: SQL path not found (' + sqlPath + ') — schema.json not written');
     console.warn('Set SQL_DIR env var to provide an alternative SQL directory.');
+  }
+
+  // Build web component index
+  console.log('\nBuilding web component index...');
+  try {
+    await fs.access(mediaSourcePath);
+    const jsParser = new JsComponentParser();
+    const components = await jsParser.parseDirectory(mediaSourcePath);
+    const syncInfo = await sync.getLastSyncInfo();
+    const wcIndex: WebComponentIndex = {
+      version: '1.0',
+      lastSync: new Date().toISOString(),
+      commit: syncInfo?.commit,
+      components,
+    };
+    if (components.length > 0) {
+      await fs.writeFile(webComponentIndexPath, JSON.stringify(wcIndex, null, 2));
+      console.log(`Saved web component index: ${components.length} components → ${webComponentIndexPath}`);
+    } else {
+      console.warn('WARNING: No web components found in media source directory — webcomponents.json not written');
+    }
+  } catch {
+    console.warn('WARNING: Media source path not found (' + mediaSourcePath + ') — webcomponents.json not written');
+    console.warn('Set MEDIA_SOURCE_DIR env var to provide an alternative media source directory.');
   }
 
   console.log('\nbuild-index: done');

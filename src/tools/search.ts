@@ -1,15 +1,16 @@
 import { JoomlaIndex } from '../parser/index-builder.js';
 import { ParsedClass, ParsedMethod, ParsedProperty } from '../parser/php-parser.js';
+import { ParsedWebComponent, WebComponentIndex } from '../parser/js-component-parser.js';
 
 export interface SearchInput {
   query: string;
-  type?: 'class' | 'method' | 'constant' | 'property' | 'all';
+  type?: 'class' | 'method' | 'constant' | 'property' | 'webcomponent' | 'all';
   limit?: number;
   verbose?: boolean;
 }
 
 export interface SearchResult {
-  type: 'class' | 'method' | 'constant' | 'property';
+  type: 'class' | 'method' | 'constant' | 'property' | 'webcomponent';
   name: string;
   fqn: string;
   context?: string;
@@ -23,7 +24,31 @@ export interface SearchOutput {
   total: number;
 }
 
-export function search(index: JoomlaIndex, input: SearchInput): SearchOutput {
+export function searchWebComponents(wcIndex: WebComponentIndex, searchTerm: string): SearchResult[] {
+  const results: SearchResult[] = [];
+
+  for (const component of wcIndex.components) {
+    const matchesTag = component.tagName.toLowerCase().includes(searchTerm);
+    const matchesClass = component.className.toLowerCase().includes(searchTerm);
+    const matchesDocblock = component.docblock ? component.docblock.toLowerCase().includes(searchTerm) : false;
+
+    if (matchesTag || matchesClass || matchesDocblock) {
+      const attributes = component.attributes.length > 0 ? component.attributes.join(', ') : '';
+      results.push({
+        type: 'webcomponent',
+        name: component.tagName,
+        fqn: component.tagName,
+        context: component.className,
+        docblock: truncateDocblock(component.docblock),
+        signature: attributes ? `<${component.tagName}> [${attributes}]` : `<${component.tagName}>`
+      });
+    }
+  }
+
+  return results;
+}
+
+export function search(index: JoomlaIndex, input: SearchInput, wcIndex?: WebComponentIndex): SearchOutput {
   const { query, type = 'all', limit = 10 } = input;
   const searchTerm = query.toLowerCase();
   const results: SearchResult[] = [];
@@ -94,6 +119,11 @@ export function search(index: JoomlaIndex, input: SearchInput): SearchOutput {
         }
       }
     }
+  }
+
+  // Search web components
+  if ((type === 'all' || type === 'webcomponent') && wcIndex) {
+    results.push(...searchWebComponents(wcIndex, searchTerm));
   }
 
   // Sort by relevance (exact matches first, then by name length)
@@ -221,6 +251,10 @@ const zeroResultFallbacks: Array<{ keywords: string[]; suggestion: string }> = [
     keywords: ['schema', 'table', 'column', 'migration'],
     suggestion: '`joomla_schema(listAll: true)` to browse all database table schemas'
   },
+  {
+    keywords: ['web component', 'webcomponent', 'custom element', 'joomla-', 'joomla_field', 'joomla_alert', 'joomla_tab'],
+    suggestion: '`joomla_search(query: "...", type: "webcomponent")` to search web components by tag name, class, or docblock'
+  },
 ];
 
 function getZeroResultSuggestions(query: string): string[] {
@@ -274,8 +308,9 @@ export function formatSearchResults(output: SearchOutput, verbose: boolean = fal
     method: 'Methods',
     constant: 'Constants',
     property: 'Properties',
+    webcomponent: 'Web Components',
   };
-  const typeOrder = ['class', 'method', 'constant', 'property'];
+  const typeOrder = ['class', 'method', 'constant', 'property', 'webcomponent'];
 
   for (const type of typeOrder) {
     if (!grouped[type]) continue;
@@ -284,13 +319,26 @@ export function formatSearchResults(output: SearchOutput, verbose: boolean = fal
     lines.push('');
 
     for (const result of grouped[type]) {
-      lines.push(`**${result.name}**`);
-      lines.push(`\`${result.fqn}\``);
-      if (verbose && result.signature) {
-        lines.push(`\`${result.signature}\``);
-      }
-      if (verbose && result.docblock) {
-        lines.push(`> ${result.docblock}`);
+      if (type === 'webcomponent') {
+        lines.push(`**${result.name}**`);
+        if (result.context) {
+          lines.push(`Class: \`${result.context}\``);
+        }
+        if (result.signature) {
+          lines.push(`\`${result.signature}\``);
+        }
+        if (verbose && result.docblock) {
+          lines.push(`> ${result.docblock}`);
+        }
+      } else {
+        lines.push(`**${result.name}**`);
+        lines.push(`\`${result.fqn}\``);
+        if (verbose && result.signature) {
+          lines.push(`\`${result.signature}\``);
+        }
+        if (verbose && result.docblock) {
+          lines.push(`> ${result.docblock}`);
+        }
       }
       lines.push('');
     }

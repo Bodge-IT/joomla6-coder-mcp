@@ -17,6 +17,7 @@ import { lookupSchema } from './schema.js';
 import { runLint } from './lint.js';
 import { runFix } from './fix.js';
 import { SqlSchemaParser, type SchemaIndex } from '../parser/sql-schema-parser.js';
+import { type WebComponentIndex } from '../parser/js-component-parser.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -37,6 +38,9 @@ export interface ToolContext {
   setSchema: (schema: SchemaIndex) => void;
   schemaParser: SqlSchemaParser;
   schemaPath: string;
+  getWebComponentIndex: () => WebComponentIndex | null;
+  setWebComponentIndex: (index: WebComponentIndex) => void;
+  webComponentIndexPath: string;
 }
 
 type ToolHandler = (args: Record<string, unknown>, ctx: ToolContext) => Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }>;
@@ -131,12 +135,12 @@ registerTool(
 registerTool(
   {
     name: 'joomla_search',
-    description: 'Search the Joomla 6 API index for classes, methods, constants, and properties. Supports filtering by type.',
+    description: 'Search the Joomla 6 API index for classes, methods, constants, properties, and web components. Supports filtering by type.',
     inputSchema: {
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Search term' },
-        type: { type: 'string', enum: ['class', 'method', 'constant', 'property', 'all'], description: 'Filter by type (default: all)' },
+        type: { type: 'string', enum: ['class', 'method', 'constant', 'property', 'webcomponent', 'all'], description: 'Filter by type (default: all)' },
         limit: { type: 'number', description: 'Max results (default: 10)' },
         verbose: { type: 'boolean', description: 'Include full docblocks and signatures (default: false)' }
       },
@@ -147,7 +151,8 @@ registerTool(
     const index = ctx.getIndex();
     if (!index) return { content: [{ type: 'text', text: 'Index not loaded. The bundled index should have loaded automatically — check server logs.' }], isError: true };
     const verbose = (args as any).verbose === true;
-    return { content: [{ type: 'text', text: truncateResponse(formatSearchResults(search(index, args as any), verbose)) }] };
+    const wcIndex = ctx.getWebComponentIndex() ?? undefined;
+    return { content: [{ type: 'text', text: truncateResponse(formatSearchResults(search(index, args as any, wcIndex), verbose)) }] };
   }
 );
 

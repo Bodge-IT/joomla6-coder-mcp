@@ -73,6 +73,7 @@ export class GitHubSync {
       'installation/sql/',
       'administrator/components/*/src/',
       'components/*/src/',
+      'build/media_source/',
     ].join('\n') + '\n');
 
     await repoGit.fetch('origin', this.config.branch, ['--depth', '1']);
@@ -129,6 +130,10 @@ export class GitHubSync {
 
   getLibrariesPath(): string {
     return path.join(this.config.cacheDir, 'libraries', 'src');
+  }
+
+  getMediaSourcePath(): string {
+    return path.join(this.config.cacheDir, 'build', 'media_source');
   }
 
   getSqlPath(): string {
