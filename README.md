@@ -11,8 +11,8 @@ This server indexes the Joomla 6 CMS source and exposes it through 14 MCP tools 
 ## Quick Start
 
 ```bash
-git clone https://github.com/bodge-it/joomla6-mcp.git
-cd joomla6-mcp
+git clone https://github.com/Bodge-IT/joomla6-coder-mcp.git
+cd joomla6-coder-mcp
 npm install
 npm run build
 npm start
@@ -22,19 +22,21 @@ The server starts on port 3500 by default (configurable via `PORT` environment v
 
 ### Connect Claude Code
 
-**Streamable HTTP (recommended):**
-```bash
-claude mcp add joomla6 --transport streamable-http "http://localhost:3500/mcp" --scope user
-```
-
-**SSE (legacy, still supported):**
+**SSE (recommended):**
 ```bash
 claude mcp add joomla6 --transport sse "http://localhost:3500/sse" --scope user
 ```
 
+**Streamable HTTP (also supported):**
+```bash
+claude mcp add joomla6 --transport streamable-http "http://localhost:3500/mcp" --scope user
+```
+
 ### First Run
 
-Once connected, run the sync tool to fetch the Joomla source and build the index:
+The server ships with a pre-built index (941 classes, 76 database tables), so all tools work immediately — no sync required.
+
+To update to the latest Joomla dev branch, run the sync tool:
 
 ```
 joomla_sync
@@ -63,7 +65,7 @@ This does a sparse checkout of the Joomla CMS repository from GitHub, parses the
 
 ### Tool Categories
 
-**Index tools** (sync, lookup_class, search, list_events, get_services) — work from the parsed PHP index. Run `joomla_sync` first.
+**Index tools** (sync, lookup_class, search, list_events, get_services) — work from the parsed PHP index. The shipped index works out of the box; run `joomla_sync` only to update.
 
 **Reference tools** (extension_structure, coding_patterns) — built-in knowledge of Joomla conventions and patterns.
 
@@ -120,7 +122,7 @@ src/
 
 - **Sparse checkout** — only fetches the directories needed for indexing, not the full Joomla repo
 - **Cached index** — the parsed index is saved as JSON so restarts don't require re-parsing
-- **Response truncation** — all tool responses are capped at 50KB to prevent transport timeouts
+- **Response truncation** — all tool responses are capped at 20KB to prevent transport timeouts
 - **LSP auto-restart** — Intelephense restarts automatically on crash (3 retries, 5s cooldown)
 - **Dual transport** — both SSE and Streamable HTTP are supported simultaneously
 
@@ -144,7 +146,7 @@ Returns index count, schema count, and LSP status.
 npm test
 ```
 
-49 tests across 5 test files using vitest.
+98 tests across 10 test files using vitest.
 
 ## Licence
 
