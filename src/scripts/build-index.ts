@@ -13,6 +13,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import { fileURLToPath } from 'url';
 import { IndexBuilder } from '../parser/index-builder.js';
 import { SqlSchemaParser } from '../parser/sql-schema-parser.js';
@@ -27,9 +28,9 @@ const sync = new GitHubSync();
 const librariesPath = process.env.LIBRARIES_PATH || sync.getLibrariesPath();
 const sqlPath = process.env.SQL_DIR || sync.getSqlPath();
 const mediaSourcePath = process.env.MEDIA_SOURCE_DIR || sync.getMediaSourcePath();
-const indexPath = path.join(DATA_DIR, 'index.json');
-const schemaPath = path.join(DATA_DIR, 'schema.json');
-const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json');
+const indexPath = path.join(DATA_DIR, 'index.json.gz');
+const schemaPath = path.join(DATA_DIR, 'schema.json.gz');
+const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json.gz');
 
 const CACHE_MARKER = '/cache/libraries/';
 
@@ -92,7 +93,7 @@ async function main(): Promise<void> {
     const schemaParser = new SqlSchemaParser();
     const schema = await schemaParser.parseDirectory(sqlPath);
     if (schema.tables.length > 0) {
-      await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+      await fs.writeFile(schemaPath, zlib.gzipSync(JSON.stringify(schema, null, 2)));
       console.log(`Saved schema: ${schema.tables.length} tables → ${schemaPath}`);
     } else {
       console.warn('WARNING: No tables found in SQL directory — schema.json not written');
@@ -116,7 +117,7 @@ async function main(): Promise<void> {
       components,
     };
     if (components.length > 0) {
-      await fs.writeFile(webComponentIndexPath, JSON.stringify(wcIndex, null, 2));
+      await fs.writeFile(webComponentIndexPath, zlib.gzipSync(JSON.stringify(wcIndex, null, 2)));
       console.log(`Saved web component index: ${components.length} components → ${webComponentIndexPath}`);
     } else {
       console.warn('WARNING: No web components found in media source directory — webcomponents.json not written');

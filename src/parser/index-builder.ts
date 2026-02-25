@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import { PhpParser, ParsedClass } from './php-parser.js';
 
 export interface JoomlaIndex {
@@ -141,14 +142,14 @@ export class IndexBuilder {
 
   async saveIndex(index: JoomlaIndex, outputPath: string): Promise<void> {
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    await fs.writeFile(outputPath, JSON.stringify(index, null, 2));
+    await fs.writeFile(outputPath, zlib.gzipSync(JSON.stringify(index, null, 2)));
     console.log(`Index saved to ${outputPath}`);
   }
 
   async loadIndex(indexPath: string): Promise<JoomlaIndex | null> {
     try {
-      const content = await fs.readFile(indexPath, 'utf-8');
-      return JSON.parse(content);
+      const compressed = await fs.readFile(indexPath);
+      return JSON.parse(zlib.gunzipSync(compressed).toString('utf-8'));
     } catch {
       return null;
     }

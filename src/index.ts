@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as zlib from 'zlib';
 import { fileURLToPath } from 'url';
 import * as crypto from 'crypto';
 
@@ -35,9 +36,9 @@ let webComponentIndex: WebComponentIndex | null = null;
 const sync = new GitHubSync();
 const indexBuilder = new IndexBuilder();
 const schemaParser = new SqlSchemaParser();
-const indexPath = path.join(DATA_DIR, 'index.json');
-const schemaPath = path.join(DATA_DIR, 'schema.json');
-const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json');
+const indexPath = path.join(DATA_DIR, 'index.json.gz');
+const schemaPath = path.join(DATA_DIR, 'schema.json.gz');
+const webComponentIndexPath = path.join(DATA_DIR, 'webcomponents.json.gz');
 
 const toolContext: ToolContext = {
   getIndex: () => joomlaIndex,
@@ -77,7 +78,8 @@ async function loadOrBuildIndex(): Promise<JoomlaIndex | null> {
 
 async function loadWebComponents(): Promise<WebComponentIndex | null> {
   try {
-    const raw = await fs.readFile(webComponentIndexPath, 'utf-8');
+    const compressed = await fs.readFile(webComponentIndexPath);
+    const raw = zlib.gunzipSync(compressed).toString('utf-8');
     const index: WebComponentIndex = JSON.parse(raw);
     if (index.components.length > 0) {
       console.log(`Loaded web component index: ${index.components.length} components`);
@@ -88,10 +90,10 @@ async function loadWebComponents(): Promise<WebComponentIndex | null> {
 }
 
 async function loadSchema(): Promise<SchemaIndex | null> {
-  // Try cached JSON first
+  // Try cached .gz first
   try {
-    const cached = await fs.readFile(schemaPath, 'utf-8');
-    const schema: SchemaIndex = JSON.parse(cached);
+    const compressed = await fs.readFile(schemaPath);
+    const schema: SchemaIndex = JSON.parse(zlib.gunzipSync(compressed).toString('utf-8'));
     if (schema.tables.length > 0) {
       console.log(`Loaded schema from cache: ${schema.tables.length} tables`);
       return schema;
@@ -104,9 +106,9 @@ async function loadSchema(): Promise<SchemaIndex | null> {
     const schema = await schemaParser.parseDirectory(sqlPath);
     if (schema.tables.length > 0) {
       console.log(`Parsed schema: ${schema.tables.length} tables`);
-      // Save to cache
+      // Save to cache as .gz
       await fs.mkdir(path.dirname(schemaPath), { recursive: true });
-      await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+      await fs.writeFile(schemaPath, zlib.gzipSync(JSON.stringify(schema, null, 2)));
       console.log(`Schema cached to ${schemaPath}`);
       return schema;
     }

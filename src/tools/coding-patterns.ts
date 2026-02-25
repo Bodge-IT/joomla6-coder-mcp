@@ -801,6 +801,8 @@ export function listPatternCategories(): string {
 
   lines.push('');
   lines.push('Use `joomla_coding_patterns` with a category name to see patterns.');
+  lines.push('');
+  lines.push('**Contributing to Joomla CMS?** See the [Generative AI Policy](https://developer.joomla.org/generative-ai-policy.html) — AI-assisted PRs must be labelled `[AI]`, fully self-reviewed, and GPL-compliant.');
 
   return lines.join('\n');
 }
