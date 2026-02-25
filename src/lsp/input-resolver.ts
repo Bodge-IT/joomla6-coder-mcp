@@ -31,6 +31,10 @@ export class InputResolver {
   async resolve(input: { filePath?: string; code?: string }): Promise<ResolvedInput> {
     if (input.filePath) {
       const absPath = path.resolve(input.filePath);
+      const rel = path.relative(this.workspaceRoot, absPath);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        throw new Error('File path must be within the workspace');
+      }
       const content = await fs.readFile(absPath, 'utf-8');
       return {
         uri: pathToFileUri(absPath),
