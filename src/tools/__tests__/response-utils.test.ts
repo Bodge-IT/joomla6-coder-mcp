@@ -1,5 +1,69 @@
-import { describe, it, expect } from 'vitest';
-import { truncateResponse } from '../response-utils.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { truncateResponse, sanitisePath, configureSanitiser } from '../response-utils.js';
+
+describe('sanitisePath', () => {
+  beforeEach(() => {
+    configureSanitiser([
+      '/home/user/mcp/cache/libraries',
+      '/home/user/mcp/cache/libraries/libraries/src',
+      '/home/user/mcp/cache/libraries/libraries/src/.intelephense-storage',
+      '/home/user/mcp/cache/libraries/libraries/src/.mcp-virtual',
+    ]);
+  });
+
+  it('strips cacheDir prefix', () => {
+    expect(sanitisePath('/home/user/mcp/cache/libraries/installation/sql/mysql.sql'))
+      .toBe('installation/sql/mysql.sql');
+  });
+
+  it('strips workspaceRoot prefix (most specific match)', () => {
+    expect(sanitisePath('/home/user/mcp/cache/libraries/libraries/src/Foo/Bar.php'))
+      .toBe('Foo/Bar.php');
+  });
+
+  it('strips intelephense storage prefix', () => {
+    expect(sanitisePath('/home/user/mcp/cache/libraries/libraries/src/.intelephense-storage/stubs/some.php'))
+      .toBe('stubs/some.php');
+  });
+
+  it('strips virtual file dir prefix', () => {
+    expect(sanitisePath('/home/user/mcp/cache/libraries/libraries/src/.mcp-virtual/virtual_abc123.php'))
+      .toBe('virtual_abc123.php');
+  });
+
+  it('normalises Windows backslash paths with configured prefixes', () => {
+    configureSanitiser([
+      'C:\\Users\\dev\\mcp\\cache\\libraries',
+      'C:\\Users\\dev\\mcp\\cache\\libraries\\libraries\\src',
+    ]);
+    expect(sanitisePath('C:\\Users\\dev\\mcp\\cache\\libraries\\libraries\\src\\Foo.php'))
+      .toBe('Foo.php');
+    expect(sanitisePath('C:\\Users\\dev\\mcp\\cache\\libraries\\installation\\sql\\mysql.sql'))
+      .toBe('installation/sql/mysql.sql');
+  });
+
+  it('normalises Windows backslash paths via legacy fallback', () => {
+    configureSanitiser([]);
+    expect(sanitisePath('C:\\Users\\dev\\mcp\\cache\\libraries\\libraries\\src\\Foo.php'))
+      .toBe('libraries/src/Foo.php');
+  });
+
+  it('falls back to legacy marker when unconfigured', () => {
+    configureSanitiser([]);
+    expect(sanitisePath('/some/other/path/cache/libraries/libraries/src/Foo.php'))
+      .toBe('libraries/src/Foo.php');
+  });
+
+  it('returns path unchanged when no prefix matches', () => {
+    expect(sanitisePath('relative/path/Foo.php'))
+      .toBe('relative/path/Foo.php');
+  });
+
+  it('returns path unchanged for unrelated absolute paths', () => {
+    expect(sanitisePath('/etc/something/unrelated.php'))
+      .toBe('/etc/something/unrelated.php');
+  });
+});
 
 describe('truncateResponse', () => {
   it('returns text unchanged when under limit', () => {

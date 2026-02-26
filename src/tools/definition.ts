@@ -1,4 +1,5 @@
 import { IntelephenseBridge } from '../lsp/index.js';
+import { sanitisePath } from './response-utils.js';
 
 export async function runDefinition(
   bridge: IntelephenseBridge,
@@ -18,7 +19,7 @@ export async function runDefinition(
   lines.push('');
 
   for (const loc of locations) {
-    lines.push(`### ${loc.path}`);
+    lines.push(`### ${sanitisePath(loc.path)}`);
     lines.push(`**Line ${loc.range.start.line + 1}**`);
     if (loc.preview) {
       lines.push('```php');

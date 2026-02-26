@@ -16,6 +16,7 @@ import { IntelephenseBridge } from './lsp/index.js';
 import { SqlSchemaParser, SchemaIndex } from './parser/sql-schema-parser.js';
 import { WebComponentIndex } from './parser/js-component-parser.js';
 import { getToolDefinitions, getToolHandler, ToolContext } from './tools/registry.js';
+import { configureSanitiser } from './tools/response-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3500', 10);
@@ -151,6 +152,16 @@ async function startLspBridge(): Promise<void> {
 }
 
 async function main() {
+  // Configure path sanitiser with all known server-side directories
+  const cacheDir = sync.getCacheDir();
+  const workspaceRoot = sync.getLibrariesPath();
+  configureSanitiser([
+    cacheDir,                                            // git clone root
+    workspaceRoot,                                       // LSP workspace (libraries/src)
+    path.join(workspaceRoot, '.intelephense-storage'),   // LSP storage
+    path.join(workspaceRoot, '.mcp-virtual'),            // virtual file dir
+  ]);
+
   joomlaIndex = await loadOrBuildIndex();
   schemaIndex = await loadSchema();
   webComponentIndex = await loadWebComponents();
