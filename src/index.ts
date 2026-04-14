@@ -20,7 +20,8 @@ import { configureSanitiser } from './tools/response-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3500', 10);
-const HOST = process.env.HOST || '0.0.0.0';
+// Default to loopback — set HOST=0.0.0.0 only behind a firewall or VPN
+const HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 const MCP_INSTRUCTIONS = process.env.MCP_INSTRUCTIONS ||
   'Joomla 6 API intelligence. The bundled index is pre-loaded — tools work immediately without running joomla_sync. ' +
@@ -177,7 +178,7 @@ async function main() {
   });
   app.use((req, _res, next) => { console.log(req.method + ' ' + req.url); next(); });
 
-  // OAuth endpoints (auto-approve for trusted network)
+  // OAuth endpoints — local-use only; HOST must be 127.0.0.1 (default) unless behind firewall/VPN
   app.get('/.well-known/oauth-authorization-server', (req, res) => {
     const baseUrl = 'http://' + req.headers.host;
     res.json({
@@ -194,27 +195,51 @@ async function main() {
 
   app.post('/register', (req, res) => {
     const id = crypto.randomUUID();
-    registeredClients.set(id, {});
-    res.status(201).json({ client_id: id, redirect_uris: req.body.redirect_uris || [] });
+    const redirectUris: string[] = Array.isArray(req.body.redirect_uris) ? req.body.redirect_uris : [];
+    registeredClients.set(id, { redirect_uris: redirectUris });
+    res.status(201).json({ client_id: id, redirect_uris: redirectUris });
   });
 
   app.get('/authorize', (req, res) => {
     const { client_id, redirect_uri, state } = req.query;
+
+    if (!client_id || typeof client_id !== 'string') {
+      return res.status(400).json({ error: 'invalid_client' });
+    }
+    const client = registeredClients.get(client_id);
+    if (!client) {
+      return res.status(400).json({ error: 'invalid_client' });
+    }
+    if (!redirect_uri || typeof redirect_uri !== 'string') {
+      return res.status(400).json({ error: 'invalid_request', error_description: 'redirect_uri required' });
+    }
+    const allowedUris: string[] = client.redirect_uris;
+    if (allowedUris.length > 0 && !allowedUris.includes(redirect_uri)) {
+      return res.status(400).json({ error: 'invalid_request', error_description: 'redirect_uri mismatch' });
+    }
+
+    let u: URL;
+    try {
+      u = new URL(redirect_uri);
+    } catch {
+      return res.status(400).json({ error: 'invalid_request', error_description: 'malformed redirect_uri' });
+    }
+
     const code = crypto.randomBytes(32).toString('hex');
-    authCodes.set(code, {
-      clientId: client_id as string,
-      redirectUri: redirect_uri as string,
-    });
-    const u = new URL(redirect_uri as string);
+    authCodes.set(code, { clientId: client_id, redirectUri: redirect_uri });
     u.searchParams.set('code', code);
     if (state) u.searchParams.set('state', state as string);
     res.redirect(u.toString());
   });
 
   app.post('/token', (req, res) => {
-    const { code } = req.body;
+    const { code, client_id } = req.body;
     const authCode = authCodes.get(code);
     if (!authCode) return res.status(400).json({ error: 'invalid_grant' });
+    if (client_id && authCode.clientId !== client_id) {
+      authCodes.delete(code);
+      return res.status(400).json({ error: 'invalid_grant' });
+    }
     authCodes.delete(code);
     const accessToken = crypto.randomBytes(32).toString('hex');
     res.json({ access_token: accessToken, token_type: 'Bearer', expires_in: 3600 });
