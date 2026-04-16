@@ -11,6 +11,7 @@ import * as fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { DiagnosticsWaiter, Diagnostic } from './diagnostics-waiter.js';
 import { InputResolver, ResolvedInput, fileUriToPath, pathToFileUri } from './input-resolver.js';
+import { sanitisePath } from '../tools/response-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -287,16 +288,27 @@ export class IntelephenseBridge {
       const filePath = fileUriToPath(loc.uri);
       let preview: string | undefined;
       try {
-        const content = await fs.readFile(filePath, 'utf-8');
-        const lines = content.split('\n');
-        const startLine = Math.max(0, loc.range.start.line - 2);
-        const endLine = Math.min(lines.length, loc.range.end.line + 3);
-        preview = lines.slice(startLine, endLine).join('\n');
-      } catch { /* file not readable */ }
+        // Resolve symlinks then restrict reads to the workspace or intelephense cache.
+        // Definitions may resolve to PHP stubs, node_modules, or anywhere else on disk —
+        // those return location metadata only, no file-content preview.
+        const realPath = await fs.realpath(filePath);
+        const relToWorkspace = path.relative(this.workspaceRoot, realPath);
+        const relToStorage = path.relative(this.storagePath, realPath);
+        const inWorkspace = relToWorkspace && !relToWorkspace.startsWith('..') && !path.isAbsolute(relToWorkspace);
+        const inStorage = relToStorage && !relToStorage.startsWith('..') && !path.isAbsolute(relToStorage);
+        if (inWorkspace || inStorage) {
+          const content = await fs.readFile(realPath, 'utf-8');
+          const lines = content.split('\n');
+          const startLine = Math.max(0, loc.range.start.line - 2);
+          const endLine = Math.min(lines.length, loc.range.end.line + 3);
+          const raw = lines.slice(startLine, endLine).join('\n');
+          preview = raw.length > 2000 ? raw.slice(0, 2000) + '\n... [truncated]' : raw;
+        }
+      } catch { /* file not readable or outside allowed roots */ }
 
       return {
-        uri: loc.uri,
-        path: filePath,
+        uri: sanitisePath(loc.uri),
+        path: sanitisePath(filePath),
         range: loc.range,
         preview,
       };
