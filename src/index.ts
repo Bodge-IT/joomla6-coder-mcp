@@ -259,7 +259,9 @@ async function main() {
     });
   });
 
-  const server = createServer();
+  // One Server instance PER connection. The MCP SDK's Protocol.connect() takes
+  // ownership of a single transport, so a shared Server would let the newest
+  // connection hijack every earlier session's responses (silent timeouts — #33).
   const transports = new Map<string, SSEServerTransport | StreamableHTTPServerTransport>();
 
   app.get('/sse', async (req, res) => {
@@ -269,6 +271,7 @@ async function main() {
     console.log('Session: ' + sid);
     transports.set(sid, transport);
     res.on('close', () => { transports.delete(sid); });
+    const server = createServer();
     try { await server.connect(transport); } catch (e) { console.error(e); }
   });
 
@@ -295,19 +298,19 @@ async function main() {
       const sessionId = req.headers['mcp-session-id'] as string | undefined;
 
       if (req.method === 'GET') {
-        // SSE stream for server-initiated messages
-        const transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => crypto.randomUUID(),
-          onsessioninitialized: (sid) => {
-            transports.set(sid, transport);
-          },
-        });
-        transport.onclose = () => {
-          const sid = transport.sessionId;
-          if (sid) transports.delete(sid);
-        };
-        await server.connect(transport);
-        await transport.handleRequest(req, res);
+        // Server-initiated stream for an ALREADY-initialised session. It must
+        // reuse that session's transport. Creating a new transport here (and
+        // reconnecting a shared Server) was the streamable-HTTP hang (#33).
+        if (sessionId && transports.has(sessionId)) {
+          const transport = transports.get(sessionId)!;
+          if (transport instanceof StreamableHTTPServerTransport) {
+            await transport.handleRequest(req, res);
+          } else {
+            res.status(400).json({ error: 'Session is SSE, not streamable HTTP' });
+          }
+        } else {
+          res.status(400).json({ error: 'No initialised session; POST an initialize request first' });
+        }
         return;
       }
 
@@ -332,6 +335,7 @@ async function main() {
             const sid = transport.sessionId;
             if (sid) transports.delete(sid);
           };
+          const server = createServer();
           await server.connect(transport);
           await transport.handleRequest(req, res);
         }
