@@ -138,6 +138,8 @@ src/
 - **Response truncation** — all tool responses are capped at 20KB to prevent transport timeouts
 - **LSP auto-restart** — Intelephense restarts automatically on crash (3 retries, 5s cooldown)
 - **Dual transport** — both SSE and Streamable HTTP are supported simultaneously
+- **One `Server` per connection** — each SSE connection and each streamable-HTTP session gets its own MCP `Server` instance, so concurrent agents never receive each other's responses
+- **`GET /mcp` reuses the session** — the server-initiated stream attaches to the transport created by the session's `initialize` POST. It needs the `mcp-session-id` header; without a valid streamable-HTTP session it returns `400`
 
 ## Health Check
 
