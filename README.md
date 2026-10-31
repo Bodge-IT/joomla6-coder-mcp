@@ -36,9 +36,9 @@ claude mcp add joomla6 --transport streamable-http "http://localhost:3500/mcp" -
 
 ### First Run
 
-The server ships with a pre-built index (941 classes, 76 database tables), so all tools work immediately — no sync required.
+The server ships with a pre-built index of Joomla 6.2 (949 classes, 76 database tables, 10 web components), so all tools work immediately — no sync required.
 
-To update to the latest Joomla dev branch, run the sync tool:
+To refresh it from the branch set in `JOOMLA_BRANCH` (default `6.2-dev`), run the sync tool:
 
 ```
 joomla_sync
