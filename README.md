@@ -44,7 +44,9 @@ To refresh it from the branch set in `JOOMLA_BRANCH` (default `6.2-dev`), run th
 joomla_sync
 ```
 
-This does a sparse checkout of the Joomla CMS repository from GitHub, parses the PHP source into a searchable index, and extracts database schemas from the install SQL.
+This does a sparse checkout of the Joomla CMS repository from GitHub, parses the PHP source into a searchable index, and extracts database schemas from the MySQL install SQL (`installation/sql/mysql`). The rebuilt schema is written gzipped to `schema.json.gz` in `DATA_DIR`.
+
+The shipped index is built from the tip of `6.2-dev` (6.2.1-dev), so it can include APIs added in 6.2. If your site runs an earlier release such as 6.1.x, check that a suggested class or method exists on your version. To index a different release line, set `JOOMLA_BRANCH` and run `joomla_sync`. The sparse-checkout list is written only on the first clone, so if `CACHE_DIR` predates 6.2, delete it before syncing to pick up the relocated `media_source` folder.
 
 ## Tools
 
