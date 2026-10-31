@@ -20,6 +20,8 @@ npm start
 
 The server starts on port 3500 by default (configurable via `PORT` environment variable). Port 3500 was chosen because previously used port (3100) can clash with Windows Hyper-V reserved port ranges.
 
+It listens on `127.0.0.1` only, so out of the box it is reachable from the same machine and nowhere else. To run it on another machine, see [Running on another machine](#running-on-another-machine).
+
 ### Connect Claude Code
 
 **SSE (recommended):**
@@ -82,10 +84,21 @@ All configuration is via environment variables:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3500` | Server port |
-| `HOST` | `0.0.0.0` | Bind address |
+| `HOST` | `127.0.0.1` | Bind address. Set `0.0.0.0` only behind a firewall or VPN |
 | `DATA_DIR` | `./data` | Index and schema cache directory |
 | `CACHE_DIR` | `./cache/libraries` | Joomla source cache (sparse checkout) |
 | `JOOMLA_BRANCH` | `6.1-dev` | Joomla CMS branch to sync |
+
+## Running on another machine
+
+To serve the index from a different machine than the one running Claude Code, set `HOST=0.0.0.0` on the server and connect to it by name:
+
+```bash
+HOST=0.0.0.0 npm start
+claude mcp add joomla6 --transport sse "http://your-server:3500/sse" --scope user
+```
+
+The server has no authentication of its own: anyone who can reach the port can use it. Keep the port closed to everything but your own machines, with a firewall rule or a VPN.
 
 ## Running as a Service
 

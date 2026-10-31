@@ -11,6 +11,8 @@ Restart=on-failure
 RestartSec=10
 Environment=NODE_ENV=production
 Environment=PORT=3500
+# Loopback only by default. For clients on other machines set 0.0.0.0, behind a firewall or VPN.
+Environment=HOST=127.0.0.1
 
 [Install]
 WantedBy=multi-user.target
