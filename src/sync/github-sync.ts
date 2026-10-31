@@ -19,7 +19,7 @@ export interface SyncResult {
 }
 
 const DEFAULT_CONFIG: SyncConfig = {
-  branch: process.env.JOOMLA_BRANCH || '6.1-dev',
+  branch: process.env.JOOMLA_BRANCH || '6.2-dev',
   cacheDir: process.env.CACHE_DIR || path.join(__dirname, '..', '..', 'cache', 'libraries'),
   repoUrl: 'https://github.com/joomla/joomla-cms.git'
 };
@@ -73,7 +73,7 @@ export class GitHubSync {
       'installation/sql/',
       'administrator/components/*/src/',
       'components/*/src/',
-      'build/media_source/',
+      'media_source/',
     ].join('\n') + '\n');
 
     await repoGit.fetch('origin', this.config.branch, ['--depth', '1']);
@@ -133,11 +133,13 @@ export class GitHubSync {
   }
 
   getMediaSourcePath(): string {
-    return path.join(this.config.cacheDir, 'build', 'media_source');
+    // Joomla 6.2 moved this from build/media_source to the repository root.
+    return path.join(this.config.cacheDir, 'media_source');
   }
 
   getSqlPath(): string {
-    return path.join(this.config.cacheDir, 'installation', 'sql');
+    // CREATE TABLE statements live in the per-database folders; MySQL is the reference.
+    return path.join(this.config.cacheDir, 'installation', 'sql', 'mysql');
   }
 
   getBranch(): string {

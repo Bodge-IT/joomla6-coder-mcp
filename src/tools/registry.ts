@@ -20,6 +20,7 @@ import { SqlSchemaParser, type SchemaIndex } from '../parser/sql-schema-parser.j
 import { type WebComponentIndex } from '../parser/js-component-parser.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as zlib from 'zlib';
 
 export interface ToolDefinition {
   name: string;
@@ -83,7 +84,7 @@ registerTool(
         if (schema.tables.length > 0) {
           ctx.setSchema(schema);
           await fs.mkdir(path.dirname(ctx.schemaPath), { recursive: true });
-          await fs.writeFile(ctx.schemaPath, JSON.stringify(schema, null, 2));
+          await fs.writeFile(ctx.schemaPath, zlib.gzipSync(JSON.stringify(schema, null, 2)));
         }
       } catch { /* SQL schema rebuild is best-effort */ }
 

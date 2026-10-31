@@ -8,7 +8,7 @@
  * Environment variables:
  *   CACHE_DIR   — override cache directory (default: cache/libraries)
  *   DATA_DIR    — override output directory (default: data)
- *   SQL_DIR     — override SQL directory (default: <CACHE_DIR>/installation/sql)
+ *   SQL_DIR     — override SQL directory (default: <CACHE_DIR>/installation/sql/mysql)
  */
 
 import * as fs from 'fs/promises';
@@ -40,6 +40,8 @@ const CACHE_MARKER = '/cache/libraries/';
  * shipped JSON files contain no machine-specific references.
  */
 function sanitiseFilePath(filePath: string): string {
+  // Windows builds produce backslash paths; normalise so the marker matches.
+  filePath = filePath.replace(/\\/g, '/');
   const idx = filePath.indexOf(CACHE_MARKER);
   if (idx !== -1) {
     return filePath.substring(idx + CACHE_MARKER.length);

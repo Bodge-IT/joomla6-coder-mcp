@@ -87,7 +87,7 @@ All configuration is via environment variables:
 | `HOST` | `127.0.0.1` | Bind address. Set `0.0.0.0` only behind a firewall or VPN |
 | `DATA_DIR` | `./data` | Index and schema cache directory |
 | `CACHE_DIR` | `./cache/libraries` | Joomla source cache (sparse checkout) |
-| `JOOMLA_BRANCH` | `6.1-dev` | Joomla CMS branch to sync |
+| `JOOMLA_BRANCH` | `6.2-dev` | Joomla CMS branch to sync |
 
 ## Running on another machine
 
