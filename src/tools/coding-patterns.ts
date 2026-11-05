@@ -105,6 +105,99 @@ $item = $model->getItem($id);`,
         'Form XML files go in administrator/forms/',
         'Table class handles actual database operations'
       ]
+    },
+    {
+      name: 'Giving Your Models a Service of Your Own (Joomla 6.2+)',
+      description: 'Inject a component\'s own service into its models by extending the core MVCFactory service provider',
+      code: `// 1. The service, registered in services/provider.php (share() builds it once)
+$container->share(
+    ExchangeRatesInterface::class,
+    fn (Container $container) => new EcbExchangeRates(HttpFactory::getHttp())
+);
+
+// 2. An "aware" interface: the label that says a class wants the service
+interface ExchangeRatesAwareInterface
+{
+    public function setExchangeRates(ExchangeRatesInterface $rates): void;
+}
+
+// 3. The model asks for the service through the label, never with new
+class ProductModel extends ItemModel implements ExchangeRatesAwareInterface
+{
+    private ExchangeRatesInterface $rates;
+
+    public function setExchangeRates(ExchangeRatesInterface $rates): void
+    {
+        $this->rates = $rates;
+    }
+}
+
+// 4. The component's factory hands the service to every model that carries the label
+use Joomla\\CMS\\MVC\\Factory\\MVCFactory;
+
+final class ShopMVCFactory extends MVCFactory implements ExchangeRatesAwareInterface
+{
+    private ExchangeRatesInterface $rates;
+
+    public function setExchangeRates(ExchangeRatesInterface $rates): void
+    {
+        $this->rates = $rates;
+    }
+
+    public function createModel($name, $prefix = '', array $config = [])
+    {
+        $model = parent::createModel($name, $prefix, $config);
+
+        if ($model instanceof ExchangeRatesAwareInterface) {
+            $model->setExchangeRates($this->rates);
+        }
+
+        return $model;
+    }
+}
+
+// 5. The provider extends core's, so Joomla's own services are still injected
+use Joomla\\CMS\\Extension\\Service\\Provider\\MVCFactory as MVCFactoryProvider;
+use Joomla\\CMS\\Factory;
+use Joomla\\CMS\\MVC\\Factory\\MVCFactoryInterface;
+use Joomla\\CMS\\Http\\HttpFactory;
+use Joomla\\DI\\Container;
+
+final class ShopMVCFactoryProvider extends MVCFactoryProvider
+{
+    protected function createMVCFactory(): MVCFactoryInterface
+    {
+        // Keep core's choice for the web services (API) client
+        if (Factory::getApplication()->isClient('api')) {
+            return parent::createMVCFactory();
+        }
+
+        return new ShopMVCFactory($this->getNamespace());
+    }
+
+    protected function injectServicesIntoFactory(MVCFactoryInterface $factory, Container $container): void
+    {
+        parent::injectServicesIntoFactory($factory, $container);
+
+        if ($factory instanceof ExchangeRatesAwareInterface) {
+            $factory->setExchangeRates($container->get(ExchangeRatesInterface::class));
+        }
+    }
+}
+
+// 6. In services/provider.php, register it in place of core's provider
+$container->registerServiceProvider(new ShopMVCFactoryProvider('\\\\Acme\\\\Component\\\\Shop'));`,
+      notes: [
+        'Avoid: creating the service inside the model (new EcbExchangeRates()). It ties the model to one implementation and bypasses the container.',
+        'Avoid on 6.2 and later: copying the core provider\'s register() recipe into your component. It drifts from core; extend the provider and call parent::injectServicesIntoFactory() instead.',
+        'createMVCFactory(), injectServicesIntoFactory() and getNamespace() are protected hooks added in Joomla 6.2 (joomla-cms PR #47718). On 6.1 and earlier the provider cannot be extended, and the only route is to set MVCFactoryInterface yourself with a copy of core\'s setter list.',
+        'If you override createMVCFactory(), keep core\'s ApiMVCFactory for the API client (as above), or give the API side its own factory if web services need the service too.',
+        'createController() and createView() can hand on the service the same way. Controllers created by this factory get the same factory, so their getModel() calls are covered.',
+        'Optional: wrap the service in $container->lazy(EcbExchangeRates::class, ...) to build it only on first use. lazy() takes the concrete class, not the interface.',
+        'A shared ExchangeRatesAwareTrait can hold the setter for both the factory and the model.',
+        'Joomla 6.3 may add constructor autowiring for MVC objects (joomla-cms PR #48193, a draft at the time of writing). Until it is merged, use the pattern above.',
+        'Source: Herman Peeren, "Adding a service via the MVCFactory", Joomla Community Magazine, October 2026.'
+      ]
     }
   ],
   events: [
